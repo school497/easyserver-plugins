@@ -1,9 +1,32 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FF9F0A"/><stop offset="1" stop-color="#E35D00"/></linearGradient>
-    <linearGradient id="hl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".24"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></linearGradient>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFB340"/><stop offset="1" stop-color="#F06A00"/></linearGradient>
+    <linearGradient id="sheen" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0.22"/><stop offset=".55" stop-color="#fff" stop-opacity="0"/></linearGradient>
+    <filter id="drop" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="5" stdDeviation="6" flood-color="#000" flood-opacity=".28"/></filter>
+    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-color="#000" flood-opacity=".22"/></filter>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#64D2FF"/><stop offset="1" stop-color="#0A84FF"/></linearGradient>
   </defs>
-  <rect width="256" height="256" rx="56" fill="url(#bg)"/>
-  <rect width="256" height="256" rx="56" fill="url(#hl)"/>
-  <g fill="none" stroke="#fff" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"><path d="M70 112a60 60 0 0 1 104-36"/><path d="M186 144a60 60 0 0 1-104 36"/><path d="M176 50v30h-30"/><path d="M80 206v-30h30"/></g>
+  <rect width="256" height="256" rx="57" fill="url(#bg)"/>
+  <g filter="url(#drop)">
+    <g transform="rotate(-8 92 120)">
+      <path d="M52 64h62l22 22v86a8 8 0 0 1-8 8H52a8 8 0 0 1-8-8V72a8 8 0 0 1 8-8z" fill="#fff"/>
+      <path d="M114 64v22h22" fill="#E8E8ED"/>
+      <rect x="56" y="96" width="68" height="50" rx="6" fill="url(#sky)"/>
+      <path d="M56 140l20-22 16 14 10-10 22 22v2a6 6 0 0 1-6 6H62a6 6 0 0 1-6-6z" fill="#34C759"/>
+      <circle cx="108" cy="110" r="7" fill="#FFD60A"/>
+      <rect x="56" y="154" width="44" height="8" rx="4" fill="#D1D1D6"/>
+    </g>
+    <g transform="rotate(8 166 140)">
+      <path d="M128 84h62l22 22v86a8 8 0 0 1-8 8h-76a8 8 0 0 1-8-8V92a8 8 0 0 1 8-8z" fill="#fff"/>
+      <path d="M190 84v22h22" fill="#E8E8ED"/>
+      <rect x="134" y="118" width="70" height="30" rx="8" fill="#0A84FF"/>
+      <text x="169" y="140" font-family="-apple-system, Helvetica, Arial, sans-serif" font-weight="800" font-size="20" fill="#fff" text-anchor="middle">WEBP</text>
+      <rect x="134" y="160" width="52" height="8" rx="4" fill="#D1D1D6"/><rect x="134" y="174" width="36" height="8" rx="4" fill="#D1D1D6"/>
+    </g>
+  </g>
+  <g fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" filter="url(#soft)">
+    <path d="M100 210c20 16 52 16 70 0"/><path d="M158 200l12 10-14 8"/>
+  </g>
+  <rect width="256" height="256" rx="57" fill="url(#sheen)"/>
+  <rect x=".75" y=".75" width="254.5" height="254.5" rx="56.25" fill="none" stroke="rgba(0,0,0,0.10)" stroke-width="1.5"/>
 </svg>

@@ -1,20 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#FF8A3D"/>
-      <stop offset="1" stop-color="#E5402B"/>
-    </linearGradient>
-    <linearGradient id="hl" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#fff" stop-opacity=".28"/>
-      <stop offset=".5" stop-color="#fff" stop-opacity="0"/>
-    </linearGradient>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#ECECF0"/></linearGradient>
+    <linearGradient id="sheen" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0.35"/><stop offset=".55" stop-color="#fff" stop-opacity="0"/></linearGradient>
+    <filter id="drop" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="5" stdDeviation="6" flood-color="#000" flood-opacity=".28"/></filter>
+    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-color="#000" flood-opacity=".22"/></filter>
+    <linearGradient id="feather" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6E3CBC"/><stop offset="0.3" stop-color="#D22128"/><stop offset="0.62" stop-color="#F37021"/><stop offset="1" stop-color="#FBB040"/></linearGradient>
   </defs>
-  <rect width="256" height="256" rx="56" fill="url(#bg)"/>
-  <rect width="256" height="256" rx="56" fill="url(#hl)"/>
-  <g fill="none" stroke="#fff" stroke-width="11" stroke-linecap="round" stroke-linejoin="round">
-    <circle cx="128" cy="128" r="66"/>
-    <path d="M62 128h132"/>
-    <path d="M128 62c-22 22-30 44-30 66s8 44 30 66"/>
-    <path d="M128 62c22 22 30 44 30 66s-8 44-30 66"/>
+  <rect width="256" height="256" rx="57" fill="url(#bg)"/>
+  <g filter="url(#drop)">
+    <path d="M196 34c-46 6-92 46-112 104-8 24-12 50-12 70l16-6c4-22 10-42 18-58 16-34 46-74 90-110z" fill="url(#feather)"/>
+    <path d="M196 34c-30 30-54 64-70 100-10 22-18 46-22 68" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".7"/>
+    <path d="M88 202c-8 14-14 22-20 26" fill="none" stroke="#8E8E93" stroke-width="6" stroke-linecap="round"/>
+    <g stroke="#fff" stroke-width="2.5" opacity=".55" fill="none"><path d="M120 140l-22-4M134 112l-24-6M150 86l-22-8M168 62l-20-8"/></g>
   </g>
+  <rect width="256" height="256" rx="57" fill="url(#sheen)"/>
+  <rect x=".75" y=".75" width="254.5" height="254.5" rx="56.25" fill="none" stroke="rgba(0,0,0,0.10)" stroke-width="1.5"/>
 </svg>

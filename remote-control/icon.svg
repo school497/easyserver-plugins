@@ -1,9 +1,21 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#30D158"/><stop offset="1" stop-color="#13893A"/></linearGradient>
-    <linearGradient id="hl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".24"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></linearGradient>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4CD964"/><stop offset="1" stop-color="#16A34A"/></linearGradient>
+    <linearGradient id="sheen" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0.22"/><stop offset=".55" stop-color="#fff" stop-opacity="0"/></linearGradient>
+    <filter id="drop" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="5" stdDeviation="6" flood-color="#000" flood-opacity=".28"/></filter>
+    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-color="#000" flood-opacity=".22"/></filter>
+    <linearGradient id="bezel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3A3A3C"/><stop offset="1" stop-color="#1C1C1E"/></linearGradient><linearGradient id="screen" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5E5CE6"/><stop offset="1" stop-color="#0A84FF"/></linearGradient><linearGradient id="stand" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F2F2F7"/><stop offset="1" stop-color="#AEAEB2"/></linearGradient>
   </defs>
-  <rect width="256" height="256" rx="56" fill="url(#bg)"/>
-  <rect width="256" height="256" rx="56" fill="url(#hl)"/>
-  <g fill="none" stroke="#fff" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"><rect x="46" y="58" width="164" height="112" rx="14"/><path d="M104 198h48M128 170v28"/><path d="M116 92l42 18-18 7-7 18z"/></g>
+  <rect width="256" height="256" rx="57" fill="url(#bg)"/>
+  <g filter="url(#drop)">
+    <rect x="38" y="52" width="180" height="124" rx="14" fill="url(#bezel)"/>
+    <rect x="48" y="62" width="160" height="104" rx="6" fill="url(#screen)"/>
+    <path d="M48 140c30-22 60-6 90-18s50-6 70 4v34a6 6 0 0 1-6 6H54a6 6 0 0 1-6-6z" fill="#fff" opacity=".22"/>
+    <path d="M110 176h36l8 26h-52z" fill="url(#stand)"/>
+    <rect x="86" y="200" width="84" height="10" rx="5" fill="#E5E5EA"/>
+    <path d="M140 90l42 18-18 6-6 18z" fill="#fff" stroke="#1C1C1E" stroke-width="4" stroke-linejoin="round"/>
+  </g>
+  <g fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" opacity=".9"><path d="M188 40a24 24 0 0 1 24 24"/><path d="M188 26a38 38 0 0 1 38 38"/></g>
+  <rect width="256" height="256" rx="57" fill="url(#sheen)"/>
+  <rect x=".75" y=".75" width="254.5" height="254.5" rx="56.25" fill="none" stroke="rgba(0,0,0,0.10)" stroke-width="1.5"/>
 </svg>

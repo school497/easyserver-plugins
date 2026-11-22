@@ -1,9 +1,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4F7BEF"/><stop offset="1" stop-color="#2440A8"/></linearGradient>
-    <linearGradient id="hl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".24"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></linearGradient>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5E8BF7"/><stop offset="1" stop-color="#2347B8"/></linearGradient>
+    <linearGradient id="sheen" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0.22"/><stop offset=".55" stop-color="#fff" stop-opacity="0"/></linearGradient>
+    <filter id="drop" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="5" stdDeviation="6" flood-color="#000" flood-opacity=".28"/></filter>
+    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-color="#000" flood-opacity=".22"/></filter>
+    <linearGradient id="hept" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4A78EE"/><stop offset="1" stop-color="#2A4FC2"/></linearGradient>
   </defs>
-  <rect width="256" height="256" rx="56" fill="url(#bg)"/>
-  <rect width="256" height="256" rx="56" fill="url(#hl)"/>
-  <g fill="none" stroke="#fff" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"><path d="M128 46l72 40v84l-72 40-72-40V86z"/><circle cx="128" cy="128" r="18"/><path d="M128 110V74M144 137l31 18M112 137l-31 18"/></g>
+  <rect width="256" height="256" rx="57" fill="url(#bg)"/>
+  <g filter="url(#drop)">
+    <polygon points="128.0,42.0 195.2,74.4 211.8,147.1 165.3,205.5 90.7,205.5 44.2,147.1 60.8,74.4" fill="url(#hept)" stroke="#fff" stroke-width="6" stroke-linejoin="round"/>
+    <circle cx="128" cy="128" r="62" fill="none" stroke="#fff" stroke-width="10"/>
+    <g stroke="#fff" stroke-width="10" stroke-linecap="round"><path d="M128.0 106.0L128.0 66.0"/><path d="M145.2 114.3L176.5 89.3"/><path d="M149.4 132.9L188.4 141.8"/><path d="M137.5 147.8L154.9 183.9"/><path d="M118.5 147.8L101.1 183.9"/><path d="M106.6 132.9L67.6 141.8"/><path d="M110.8 114.3L79.5 89.3"/></g>
+    <circle cx="128.0" cy="66.0" r="7" fill="#fff"/><circle cx="176.5" cy="89.3" r="7" fill="#fff"/><circle cx="188.4" cy="141.8" r="7" fill="#fff"/><circle cx="154.9" cy="183.9" r="7" fill="#fff"/><circle cx="101.1" cy="183.9" r="7" fill="#fff"/><circle cx="67.6" cy="141.8" r="7" fill="#fff"/><circle cx="79.5" cy="89.3" r="7" fill="#fff"/>
+    <circle cx="128" cy="128" r="24" fill="#fff"/><circle cx="128" cy="128" r="11" fill="#2F5BD8"/>
+  </g>
+  <rect width="256" height="256" rx="57" fill="url(#sheen)"/>
+  <rect x=".75" y=".75" width="254.5" height="254.5" rx="56.25" fill="none" stroke="rgba(0,0,0,0.10)" stroke-width="1.5"/>
 </svg>
