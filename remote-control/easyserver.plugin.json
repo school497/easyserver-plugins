@@ -1,0 +1,182 @@
+{
+  "schema": 1,
+  "id": "dev.easyserver.remote",
+  "name": "Remote Control",
+  "version": "1.0.0",
+  "developer": "EasyServer",
+  "subtitle": "See and control this computer from anywhere",
+  "description": "Control this computer’s screen, keyboard and mouse from another device with RustDesk, a free and open-source remote desktop app. Show RustDesk ID gives you the ID to type into RustDesk on your other device, with the password from Settings.\n\nFrom the app you can also lock the screen, put the computer to sleep, restart it or shut it down, and take screenshots to download.\n\nOn a Mac, allow Screen Recording and Accessibility for RustDesk in System Settings › Privacy & Security.",
+  "category": "networking",
+  "icon": "icon.svg",
+  "platforms": [
+    "darwin",
+    "linux",
+    "win32"
+  ],
+  "files": [
+    "icon.svg",
+    "scripts/lib.mjs",
+    "scripts/power.mjs",
+    "scripts/remote.mjs",
+    "scripts/screenshot.mjs"
+  ],
+  "requires": [
+    {
+      "id": "rustdesk",
+      "label": "RustDesk",
+      "candidates": {
+        "darwin": [
+          {
+            "path": "/Applications/RustDesk.app/Contents/MacOS/RustDesk"
+          }
+        ],
+        "linux": [
+          {
+            "path": "/usr/bin/rustdesk"
+          },
+          {
+            "path": "/usr/lib/rustdesk/rustdesk"
+          },
+          {
+            "path": "@path:rustdesk"
+          }
+        ],
+        "win32": [
+          {
+            "path": "C:/Program Files/RustDesk/rustdesk.exe"
+          }
+        ]
+      },
+      "install": {
+        "darwin": [
+          "brew install --cask rustdesk"
+        ],
+        "win32": [
+          "winget install --id RustDesk.RustDesk -e --silent --accept-package-agreements --accept-source-agreements --disable-interactivity"
+        ],
+        "linux": [
+          "echo \"Download RustDesk for Linux from rustdesk.com\"; exit 1"
+        ]
+      },
+      "hint": "Install RustDesk from rustdesk.com."
+    }
+  ],
+  "settings": [
+    {
+      "key": "password",
+      "label": "Remote Desktop Password",
+      "type": "password",
+      "default": "",
+      "group": "Remote Desktop",
+      "pattern": "^.{8,}$",
+      "patternHint": "At least 8 characters.",
+      "description": "Lets you connect without someone accepting on this computer."
+    },
+    {
+      "key": "allowPower",
+      "label": "Allow Restart and Shut Down",
+      "type": "boolean",
+      "default": true,
+      "group": "Power",
+      "restart": false
+    },
+    {
+      "key": "powerDelay",
+      "label": "Delay Before Restart or Shut Down",
+      "type": "slider",
+      "default": 1,
+      "min": 0,
+      "max": 10,
+      "unit": "min",
+      "group": "Power",
+      "restart": false,
+      "visibleIf": {
+        "key": "allowPower",
+        "equals": true
+      }
+    }
+  ],
+  "run": {
+    "command": "@node",
+    "args": [
+      "{{pluginDir}}/scripts/remote.mjs",
+      "run"
+    ]
+  },
+  "actions": [
+    {
+      "id": "id",
+      "label": "Show RustDesk ID",
+      "command": "@node",
+      "args": [
+        "{{pluginDir}}/scripts/remote.mjs",
+        "id"
+      ]
+    },
+    {
+      "id": "screenshot",
+      "label": "Take Screenshot",
+      "command": "@node",
+      "args": [
+        "{{pluginDir}}/scripts/screenshot.mjs"
+      ]
+    },
+    {
+      "id": "lock",
+      "label": "Lock Screen",
+      "command": "@node",
+      "args": [
+        "{{pluginDir}}/scripts/power.mjs",
+        "lock"
+      ]
+    },
+    {
+      "id": "sleep",
+      "label": "Sleep",
+      "confirm": "Put this computer to sleep? It goes offline until something wakes it.",
+      "command": "@node",
+      "args": [
+        "{{pluginDir}}/scripts/power.mjs",
+        "sleep"
+      ]
+    },
+    {
+      "id": "restart",
+      "label": "Restart",
+      "confirm": "Restart this computer? EasyServer comes back if it starts automatically.",
+      "destructive": true,
+      "command": "@node",
+      "args": [
+        "{{pluginDir}}/scripts/power.mjs",
+        "restart"
+      ]
+    },
+    {
+      "id": "shutdown",
+      "label": "Shut Down",
+      "confirm": "Shut down this computer? You’ll need to turn it on in person.",
+      "destructive": true,
+      "command": "@node",
+      "args": [
+        "{{pluginDir}}/scripts/power.mjs",
+        "shutdown"
+      ]
+    },
+    {
+      "id": "cancel",
+      "label": "Cancel Restart or Shut Down",
+      "command": "@node",
+      "args": [
+        "{{pluginDir}}/scripts/power.mjs",
+        "cancel"
+      ]
+    }
+  ],
+  "folders": [
+    {
+      "id": "screenshots",
+      "label": "Screenshots",
+      "root": "{{dataDir}}/screenshots"
+    }
+  ]
+}

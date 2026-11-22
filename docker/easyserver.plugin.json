@@ -1,0 +1,262 @@
+{
+  "schema": 1,
+  "id": "dev.easyserver.docker",
+  "name": "Docker",
+  "version": "1.0.0",
+  "developer": "EasyServer",
+  "subtitle": "Run containers from a Compose file",
+  "description": "Runs any set of containers described in a Docker Compose file: databases, web apps, home automation, game servers and more.\n\nWrite the Compose file in Settings, or upload a whole project with a compose.yaml and Dockerfiles to Project Files. Starting the plugin brings everything up and streams container logs to Output; stopping it stops, removes or keeps the containers, as you choose.\n\nNeeds Docker Desktop on Mac and Windows, or Docker Engine on Linux. EasyServer starts Docker if it isn’t running.",
+  "category": "developer-tools",
+  "icon": "icon.svg",
+  "platforms": [
+    "darwin",
+    "linux",
+    "win32"
+  ],
+  "files": [
+    "icon.svg",
+    "scripts/compose.mjs",
+    "scripts/lib.mjs",
+    "templates/compose.env",
+    "templates/compose.yaml"
+  ],
+  "requires": [
+    {
+      "id": "docker",
+      "label": "Docker",
+      "candidates": {
+        "darwin": [
+          {
+            "path": "/usr/local/bin/docker"
+          },
+          {
+            "path": "/opt/homebrew/bin/docker"
+          },
+          {
+            "path": "/Applications/Docker.app/Contents/Resources/bin/docker"
+          },
+          {
+            "path": "@path:docker"
+          }
+        ],
+        "linux": [
+          {
+            "path": "/usr/bin/docker"
+          },
+          {
+            "path": "/usr/local/bin/docker"
+          },
+          {
+            "path": "@path:docker"
+          }
+        ],
+        "win32": [
+          {
+            "path": "C:/Program Files/Docker/Docker/resources/bin/docker.exe"
+          },
+          {
+            "path": "@path:docker"
+          }
+        ]
+      },
+      "install": {
+        "darwin": [
+          "brew install --cask docker"
+        ],
+        "linux": [
+          "curl -fsSL https://get.docker.com | sudo -n sh && sudo -n usermod -aG docker \"$USER\""
+        ],
+        "win32": [
+          "winget install --id Docker.DockerDesktop -e --silent --accept-package-agreements --accept-source-agreements --disable-interactivity"
+        ]
+      },
+      "hint": "Install Docker Desktop (docker.com) or Docker Engine, open it once, then press Install again."
+    }
+  ],
+  "settings": [
+    {
+      "key": "projectName",
+      "label": "Project Name",
+      "type": "string",
+      "default": "easyserver",
+      "group": "Project",
+      "pattern": "^[a-z0-9][a-z0-9_-]*$",
+      "patternHint": "Lowercase letters, numbers, dashes and underscores."
+    },
+    {
+      "key": "source",
+      "label": "Compose File",
+      "type": "select",
+      "default": "inline",
+      "group": "Project",
+      "options": [
+        {
+          "label": "Written Below",
+          "value": "inline"
+        },
+        {
+          "label": "From Project Files",
+          "value": "folder"
+        }
+      ]
+    },
+    {
+      "key": "compose",
+      "label": "compose.yaml",
+      "type": "text",
+      "rows": 14,
+      "group": "Project",
+      "visibleIf": {
+        "key": "source",
+        "equals": "inline"
+      },
+      "default": "services:\n  web:\n    image: nginx:alpine\n    ports:\n      - \"8081:80\"\n    volumes:\n      - ./site:/usr/share/nginx/html:ro\n    restart: unless-stopped\n",
+      "description": "Relative paths like ./site point into Project Files."
+    },
+    {
+      "key": "envVars",
+      "label": "Environment Variables",
+      "type": "text",
+      "rows": 4,
+      "default": "",
+      "group": "Project",
+      "description": "One NAME=value per line, available to the Compose file as ${NAME}."
+    },
+    {
+      "key": "pullPolicy",
+      "label": "Download Images",
+      "type": "select",
+      "default": "missing",
+      "group": "Behavior",
+      "options": [
+        {
+          "label": "When Missing",
+          "value": "missing"
+        },
+        {
+          "label": "Every Start",
+          "value": "always"
+        },
+        {
+          "label": "Never",
+          "value": "never"
+        }
+      ]
+    },
+    {
+      "key": "build",
+      "label": "Build Images from Project Files",
+      "type": "boolean",
+      "default": false,
+      "group": "Behavior"
+    },
+    {
+      "key": "onStop",
+      "label": "When the Plugin Stops",
+      "type": "select",
+      "default": "stop",
+      "group": "Behavior",
+      "restart": false,
+      "options": [
+        {
+          "label": "Stop Containers",
+          "value": "stop"
+        },
+        {
+          "label": "Remove Containers",
+          "value": "down"
+        },
+        {
+          "label": "Leave Running",
+          "value": "keep"
+        }
+      ]
+    }
+  ],
+  "templates": [
+    {
+      "src": "templates/compose.yaml",
+      "dest": "compose.yaml"
+    },
+    {
+      "src": "templates/compose.env",
+      "dest": "compose.env"
+    }
+  ],
+  "run": {
+    "command": "@node",
+    "args": [
+      "{{pluginDir}}/scripts/compose.mjs",
+      "up"
+    ],
+    "stop": {
+      "command": "@node",
+      "args": [
+        "{{pluginDir}}/scripts/compose.mjs",
+        "stop"
+      ],
+      "timeoutSec": 120
+    }
+  },
+  "actions": [
+    {
+      "id": "ps",
+      "label": "Show Containers",
+      "command": "@node",
+      "args": [
+        "{{pluginDir}}/scripts/compose.mjs",
+        "ps"
+      ]
+    },
+    {
+      "id": "pull",
+      "label": "Download Image Updates",
+      "background": true,
+      "command": "@node",
+      "args": [
+        "{{pluginDir}}/scripts/compose.mjs",
+        "pull"
+      ]
+    },
+    {
+      "id": "build",
+      "label": "Rebuild Images",
+      "background": true,
+      "command": "@node",
+      "args": [
+        "{{pluginDir}}/scripts/compose.mjs",
+        "build"
+      ]
+    },
+    {
+      "id": "prune",
+      "label": "Remove Unused Images",
+      "confirm": "Delete every Docker image no container uses? They download again when needed.",
+      "destructive": true,
+      "command": "{{bin.docker}}",
+      "args": [
+        "image",
+        "prune",
+        "-af"
+      ],
+      "timeoutSec": 300
+    },
+    {
+      "id": "info",
+      "label": "Docker Info",
+      "command": "{{bin.docker}}",
+      "args": [
+        "version"
+      ]
+    }
+  ],
+  "folders": [
+    {
+      "id": "project",
+      "label": "Project Files",
+      "root": "{{dataDir}}/project",
+      "maxFileMB": 100,
+      "description": "The Compose project folder: compose.yaml, Dockerfiles, and files your containers mount."
+    }
+  ]
+}

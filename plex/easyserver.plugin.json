@@ -1,0 +1,144 @@
+{
+  "schema": 1,
+  "id": "dev.easyserver.plex",
+  "name": "Plex Media Server",
+  "version": "1.0.0",
+  "developer": "EasyServer",
+  "subtitle": "Stream your movies, shows and music",
+  "description": "Runs Plex Media Server so you can stream your own movies, TV shows, music and photos to Plex apps on phones, TVs and computers.\n\nUpload media to the Movies, TV Shows, Music and Photos folders here, then add them as libraries in Plex. Show Media Folder Paths gives the exact locations.\n\nSetting up a server with no screen? Get a claim token at plex.tv/claim, paste it into Settings, and run Link to Plex Account.\n\nIf Plex already starts on its own (at login, or as a Linux service), turn that off first so only EasyServer runs it.",
+  "category": "media",
+  "icon": "icon.svg",
+  "platforms": [
+    "darwin",
+    "linux",
+    "win32"
+  ],
+  "files": [
+    "icon.svg",
+    "scripts/claim.mjs",
+    "scripts/lib.mjs",
+    "scripts/media.mjs"
+  ],
+  "requires": [
+    {
+      "id": "plex",
+      "label": "Plex Media Server",
+      "candidates": {
+        "darwin": [
+          {
+            "path": "/Applications/Plex Media Server.app/Contents/MacOS/Plex Media Server"
+          }
+        ],
+        "linux": [
+          {
+            "path": "/usr/lib/plexmediaserver/Plex Media Server"
+          }
+        ],
+        "win32": [
+          {
+            "path": "C:/Program Files/Plex/Plex Media Server/Plex Media Server.exe"
+          },
+          {
+            "path": "C:/Program Files (x86)/Plex/Plex Media Server/Plex Media Server.exe"
+          }
+        ]
+      },
+      "install": {
+        "darwin": [
+          "brew install --cask plex-media-server"
+        ],
+        "linux": [
+          "command -v apt-get >/dev/null || { echo \"Download Plex from plex.tv/media-server-downloads\"; exit 1; }; curl -fsSL https://downloads.plex.tv/plex-keys/PlexSign.key | sudo -n gpg --dearmor --yes -o /usr/share/keyrings/plex.gpg && echo \"deb [signed-by=/usr/share/keyrings/plex.gpg] https://downloads.plex.tv/repo/deb public main\" | sudo -n tee /etc/apt/sources.list.d/plexmediaserver.list >/dev/null && sudo -n apt-get update && sudo -n apt-get install -y plexmediaserver && sudo -n systemctl disable --now plexmediaserver"
+        ],
+        "win32": [
+          "winget install --id Plex.PlexMediaServer -e --silent --accept-package-agreements --accept-source-agreements --disable-interactivity"
+        ]
+      },
+      "hint": "Install Plex Media Server from plex.tv/media-server-downloads."
+    }
+  ],
+  "settings": [
+    {
+      "key": "claimToken",
+      "label": "Claim Token",
+      "type": "password",
+      "default": "",
+      "placeholder": "claim-…",
+      "restart": false,
+      "description": "From plex.tv/claim. Lasts 4 minutes; run Link to Plex Account right after saving."
+    },
+    {
+      "key": "friendlyName",
+      "label": "Server Name in Plex",
+      "type": "string",
+      "default": "",
+      "placeholder": "Uses the computer name",
+      "restart": true
+    }
+  ],
+  "run": {
+    "command": "{{bin.plex}}",
+    "env": {
+      "PLEX_MEDIA_SERVER_APPLICATION_SUPPORT_DIR": "{{#if isLinux}}{{dataDir}}/library{{/if}}",
+      "PLEX_MEDIA_SERVER_HOME": "{{#if isLinux}}/usr/lib/plexmediaserver{{/if}}",
+      "PLEX_MEDIA_SERVER_INFO_DEVICE": "{{settings.friendlyName}}",
+      "LD_LIBRARY_PATH": "{{#if isLinux}}/usr/lib/plexmediaserver/lib{{/if}}"
+    }
+  },
+  "health": {
+    "type": "http",
+    "target": "http://127.0.0.1:32400/identity"
+  },
+  "links": [
+    {
+      "label": "Open Plex",
+      "url": "http://{{host}}:32400/web"
+    }
+  ],
+  "actions": [
+    {
+      "id": "claim",
+      "label": "Link to Plex Account",
+      "command": "@node",
+      "args": [
+        "{{pluginDir}}/scripts/claim.mjs"
+      ]
+    },
+    {
+      "id": "paths",
+      "label": "Show Media Folder Paths",
+      "command": "@node",
+      "args": [
+        "{{pluginDir}}/scripts/media.mjs",
+        "paths"
+      ]
+    }
+  ],
+  "folders": [
+    {
+      "id": "movies",
+      "label": "Movies",
+      "root": "{{dataDir}}/media/movies",
+      "maxFileMB": 100
+    },
+    {
+      "id": "tv",
+      "label": "TV Shows",
+      "root": "{{dataDir}}/media/tv-shows",
+      "maxFileMB": 100,
+      "description": "One folder per show, then Season 01, Season 02…"
+    },
+    {
+      "id": "music",
+      "label": "Music",
+      "root": "{{dataDir}}/media/music",
+      "maxFileMB": 100
+    },
+    {
+      "id": "photos",
+      "label": "Photos",
+      "root": "{{dataDir}}/media/photos",
+      "maxFileMB": 100
+    }
+  ]
+}

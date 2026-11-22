@@ -1,0 +1,271 @@
+{
+  "schema": 1,
+  "id": "dev.easyserver.cloudstorage",
+  "name": "Cloud Storage",
+  "version": "1.0.0",
+  "developer": "EasyServer",
+  "subtitle": "Your own private cloud drive",
+  "description": "Turns this computer into a private cloud drive you can open from any Mac, PC or phone on your network.\n\nIt speaks WebDAV, which Finder (Go › Connect to Server), Windows File Explorer (Map Network Drive) and most file apps support. Files also show up in the app under Files, where you can upload and download them.\n\nTurn on Backups to copy everything to Amazon S3, Backblaze B2, Google Drive, OneDrive, Dropbox or another rclone remote.",
+  "category": "storage",
+  "icon": "icon.svg",
+  "platforms": [
+    "darwin",
+    "linux",
+    "win32"
+  ],
+  "files": [
+    "icon.svg",
+    "templates/rclone.conf"
+  ],
+  "requires": [
+    {
+      "id": "rclone",
+      "label": "rclone",
+      "candidates": {
+        "darwin": [
+          {
+            "path": "/opt/homebrew/bin/rclone"
+          },
+          {
+            "path": "/usr/local/bin/rclone"
+          },
+          {
+            "path": "@path:rclone"
+          }
+        ],
+        "linux": [
+          {
+            "path": "/usr/bin/rclone"
+          },
+          {
+            "path": "/usr/local/bin/rclone"
+          },
+          {
+            "path": "@path:rclone"
+          }
+        ],
+        "win32": [
+          {
+            "path": "{{env.LOCALAPPDATA}}/Microsoft/WinGet/Links/rclone.exe"
+          },
+          {
+            "path": "@path:rclone"
+          }
+        ]
+      },
+      "install": {
+        "darwin": [
+          "brew install rclone"
+        ],
+        "linux": [
+          "if command -v apt-get >/dev/null; then sudo -n apt-get install -y rclone; elif command -v dnf >/dev/null; then sudo -n dnf install -y rclone; elif command -v pacman >/dev/null; then sudo -n pacman -S --noconfirm rclone; else echo \"No supported package manager found\"; exit 1; fi"
+        ],
+        "win32": [
+          "winget install --id Rclone.Rclone -e --silent --accept-package-agreements --accept-source-agreements --disable-interactivity"
+        ]
+      },
+      "hint": "Install rclone from rclone.org/install."
+    }
+  ],
+  "settings": [
+    {
+      "key": "port",
+      "label": "Port",
+      "type": "port",
+      "default": 8090,
+      "min": 1024,
+      "group": "Network"
+    },
+    {
+      "key": "listen",
+      "label": "Who Can Connect",
+      "type": "select",
+      "default": "all",
+      "group": "Network",
+      "options": [
+        {
+          "label": "Only This Computer",
+          "value": "local"
+        },
+        {
+          "label": "Anyone on My Network",
+          "value": "all"
+        }
+      ]
+    },
+    {
+      "key": "username",
+      "label": "Username",
+      "type": "string",
+      "default": "easyserver",
+      "required": true,
+      "group": "Sign In",
+      "pattern": "^[A-Za-z0-9._-]+$",
+      "patternHint": "Letters, numbers, dots, dashes and underscores."
+    },
+    {
+      "key": "password",
+      "label": "Password",
+      "type": "password",
+      "default": "",
+      "required": true,
+      "pattern": "^.{8,}$",
+      "patternHint": "At least 8 characters.",
+      "group": "Sign In"
+    },
+    {
+      "key": "readOnly",
+      "label": "Read Only",
+      "type": "boolean",
+      "default": false,
+      "group": "Sign In",
+      "description": "People can open and download files but not change them."
+    },
+    {
+      "key": "cacheMode",
+      "label": "Write Cache",
+      "type": "select",
+      "default": "writes",
+      "group": "Advanced",
+      "options": [
+        {
+          "label": "Off",
+          "value": "off"
+        },
+        {
+          "label": "Writes",
+          "value": "writes"
+        },
+        {
+          "label": "Full",
+          "value": "full"
+        }
+      ],
+      "description": "Writes is the most compatible with Finder and File Explorer."
+    },
+    {
+      "key": "backupEnabled",
+      "label": "Back Up to Another Cloud",
+      "type": "boolean",
+      "default": false,
+      "group": "Backups",
+      "restart": false
+    },
+    {
+      "key": "backupRemote",
+      "label": "Backup Destination",
+      "type": "string",
+      "default": "",
+      "group": "Backups",
+      "placeholder": "mys3:my-bucket/easyserver",
+      "visibleIf": {
+        "key": "backupEnabled",
+        "equals": true
+      },
+      "restart": false,
+      "description": "A remote from the configuration below, a colon, then a path."
+    },
+    {
+      "key": "backupConfig",
+      "label": "rclone Configuration",
+      "type": "text",
+      "default": "[mys3]\ntype = s3\nprovider = AWS\naccess_key_id = \nsecret_access_key = \nregion = us-east-1\n",
+      "rows": 8,
+      "group": "Backups",
+      "visibleIf": {
+        "key": "backupEnabled",
+        "equals": true
+      },
+      "restart": false,
+      "description": "Paste the output of “rclone config show” from a computer where you set the remote up."
+    }
+  ],
+  "templates": [
+    {
+      "src": "templates/rclone.conf",
+      "dest": "rclone.conf"
+    }
+  ],
+  "run": {
+    "command": "{{bin.rclone}}",
+    "args": [
+      "serve",
+      "webdav",
+      "{{dataDir}}/storage",
+      "--addr",
+      "{{#if settings.listen=all}}0.0.0.0{{/if}}{{#if settings.listen=local}}127.0.0.1{{/if}}:{{settings.port}}",
+      "--user",
+      "{{settings.username}}",
+      "--pass",
+      "{{settings.password}}",
+      "--vfs-cache-mode",
+      "{{settings.cacheMode}}",
+      "--cache-dir",
+      "{{dataDir}}/cache",
+      "{{#if settings.readOnly}}--read-only{{/if}}",
+      "--config",
+      "{{runtimeDir}}/rclone.conf"
+    ]
+  },
+  "health": {
+    "type": "http",
+    "target": "http://127.0.0.1:{{settings.port}}/"
+  },
+  "links": [
+    {
+      "label": "WebDAV Address",
+      "url": "http://{{host}}:{{settings.port}}/"
+    }
+  ],
+  "actions": [
+    {
+      "id": "size",
+      "label": "Storage Used",
+      "command": "{{bin.rclone}}",
+      "args": [
+        "size",
+        "{{dataDir}}/storage",
+        "--config",
+        "{{runtimeDir}}/rclone.conf"
+      ]
+    },
+    {
+      "id": "backup",
+      "label": "Back Up Now",
+      "background": true,
+      "command": "{{bin.rclone}}",
+      "args": [
+        "sync",
+        "{{dataDir}}/storage",
+        "{{settings.backupRemote}}",
+        "--config",
+        "{{runtimeDir}}/rclone.conf",
+        "--stats",
+        "15s",
+        "--stats-one-line",
+        "-v"
+      ]
+    },
+    {
+      "id": "check",
+      "label": "Test Backup Destination",
+      "command": "{{bin.rclone}}",
+      "args": [
+        "lsd",
+        "{{settings.backupRemote}}",
+        "--config",
+        "{{runtimeDir}}/rclone.conf"
+      ],
+      "timeoutSec": 60
+    }
+  ],
+  "folders": [
+    {
+      "id": "storage",
+      "label": "Files",
+      "root": "{{dataDir}}/storage",
+      "maxFileMB": 100,
+      "description": "Everything in your cloud drive."
+    }
+  ]
+}

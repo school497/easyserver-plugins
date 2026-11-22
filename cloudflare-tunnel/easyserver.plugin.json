@@ -1,0 +1,231 @@
+{
+  "schema": 1,
+  "id": "dev.easyserver.cloudflared",
+  "name": "Cloudflare Tunnel",
+  "version": "1.0.0",
+  "developer": "EasyServer",
+  "subtitle": "Put a site online without port forwarding",
+  "description": "Shares a website or app running on this computer with the whole internet through Cloudflare, without opening ports on your router.\n\nQuick mode needs no account: it gives you a random trycloudflare.com address. Show Public Address tells you what it is. With a Cloudflare account, create a tunnel in Zero Trust › Networks › Tunnels, paste its token here, and use your own domain.\n\nPair it with the Apache Web Server plugin to publish a site in a minute.",
+  "category": "networking",
+  "icon": "icon.svg",
+  "platforms": [
+    "darwin",
+    "linux",
+    "win32"
+  ],
+  "files": [
+    "icon.svg",
+    "scripts/download.mjs",
+    "scripts/lib.mjs",
+    "scripts/url.mjs"
+  ],
+  "requires": [
+    {
+      "id": "cloudflared",
+      "label": "cloudflared",
+      "candidates": {
+        "darwin": [
+          {
+            "path": "/opt/homebrew/bin/cloudflared"
+          },
+          {
+            "path": "/usr/local/bin/cloudflared"
+          },
+          {
+            "path": "{{dataDir}}/bin/cloudflared"
+          },
+          {
+            "path": "@path:cloudflared"
+          }
+        ],
+        "linux": [
+          {
+            "path": "/usr/local/bin/cloudflared"
+          },
+          {
+            "path": "/usr/bin/cloudflared"
+          },
+          {
+            "path": "{{dataDir}}/bin/cloudflared"
+          },
+          {
+            "path": "@path:cloudflared"
+          }
+        ],
+        "win32": [
+          {
+            "path": "C:/Program Files (x86)/cloudflared/cloudflared.exe"
+          },
+          {
+            "path": "C:/Program Files/cloudflared/cloudflared.exe"
+          },
+          {
+            "path": "{{dataDir}}/bin/cloudflared.exe"
+          }
+        ]
+      },
+      "install": {
+        "darwin": [
+          "if command -v brew >/dev/null; then brew install cloudflared; else mkdir -p \"{{dataDir}}/bin\" && curl -fsSL https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-darwin-{{#if isArm}}arm64{{/if}}{{#if isX64}}amd64{{/if}}.tgz | tar -xz -C \"{{dataDir}}/bin\"; fi"
+        ],
+        "linux": [
+          {
+            "command": "@node",
+            "args": [
+              "{{pluginDir}}/scripts/download.mjs",
+              "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-{{#if isArm}}arm64{{/if}}{{#if isX64}}amd64{{/if}}",
+              "{{dataDir}}/bin/cloudflared"
+            ]
+          }
+        ],
+        "win32": [
+          {
+            "command": "@node",
+            "args": [
+              "{{pluginDir}}/scripts/download.mjs",
+              "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe",
+              "{{dataDir}}/bin/cloudflared.exe"
+            ]
+          }
+        ]
+      },
+      "hint": "Install cloudflared from developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads."
+    }
+  ],
+  "settings": [
+    {
+      "key": "mode",
+      "label": "Tunnel",
+      "type": "select",
+      "default": "quick",
+      "options": [
+        {
+          "label": "Quick (No Account)",
+          "value": "quick"
+        },
+        {
+          "label": "My Cloudflare Account",
+          "value": "token"
+        }
+      ]
+    },
+    {
+      "key": "target",
+      "label": "Local Address to Share",
+      "type": "url",
+      "default": "http://localhost:8080",
+      "required": true,
+      "visibleIf": {
+        "key": "mode",
+        "equals": "quick"
+      },
+      "description": "For example, the Apache Web Server plugin’s address."
+    },
+    {
+      "key": "token",
+      "label": "Tunnel Token",
+      "type": "password",
+      "default": "",
+      "required": true,
+      "visibleIf": {
+        "key": "mode",
+        "equals": "token"
+      },
+      "description": "From Zero Trust › Networks › Tunnels › your tunnel › Install connector."
+    },
+    {
+      "key": "protocol",
+      "label": "Protocol",
+      "type": "select",
+      "default": "auto",
+      "group": "Advanced",
+      "options": [
+        {
+          "label": "Automatic",
+          "value": "auto"
+        },
+        {
+          "label": "QUIC",
+          "value": "quic"
+        },
+        {
+          "label": "HTTP/2",
+          "value": "http2"
+        }
+      ],
+      "description": "Try HTTP/2 if your network blocks UDP."
+    },
+    {
+      "key": "metricsPort",
+      "label": "Status Port",
+      "type": "port",
+      "default": 20241,
+      "min": 1024,
+      "group": "Advanced",
+      "description": "Used by EasyServer to check the tunnel is connected."
+    },
+    {
+      "key": "logLevel",
+      "label": "Log Detail",
+      "type": "select",
+      "default": "info",
+      "group": "Advanced",
+      "options": [
+        {
+          "label": "Normal",
+          "value": "info"
+        },
+        {
+          "label": "Warnings Only",
+          "value": "warn"
+        },
+        {
+          "label": "Debug",
+          "value": "debug"
+        }
+      ]
+    }
+  ],
+  "run": {
+    "command": "{{bin.cloudflared}}",
+    "args": [
+      "tunnel",
+      "--no-autoupdate",
+      "--metrics",
+      "127.0.0.1:{{settings.metricsPort}}",
+      "--protocol",
+      "{{settings.protocol}}",
+      "--loglevel",
+      "{{settings.logLevel}}",
+      "{{#if settings.mode=quick}}--url{{/if}}",
+      "{{#if settings.mode=quick}}{{settings.target}}{{/if}}",
+      "{{#if settings.mode=token}}run{{/if}}"
+    ],
+    "env": {
+      "TUNNEL_TOKEN": "{{#if settings.mode=token}}{{settings.token}}{{/if}}"
+    }
+  },
+  "health": {
+    "type": "http",
+    "target": "http://127.0.0.1:{{settings.metricsPort}}/ready",
+    "intervalSec": 30
+  },
+  "actions": [
+    {
+      "id": "url",
+      "label": "Show Public Address",
+      "command": "@node",
+      "args": [
+        "{{pluginDir}}/scripts/url.mjs"
+      ]
+    },
+    {
+      "id": "version",
+      "label": "cloudflared Version",
+      "command": "{{bin.cloudflared}}",
+      "args": [
+        "--version"
+      ]
+    }
+  ]
+}

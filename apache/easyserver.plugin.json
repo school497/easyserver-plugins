@@ -1,0 +1,300 @@
+{
+  "schema": 1,
+  "id": "dev.easyserver.apache",
+  "name": "Apache Web Server",
+  "version": "1.1.0",
+  "developer": "EasyServer",
+  "subtitle": "Host a website from this computer",
+  "description": "Serves a website from this computer with the Apache HTTP Server.\n\nEasyServer gives Apache its own configuration file, separate from any Apache setup you already have. Pick a port, upload your site to Website Files, and open it from any device on your network. Uploads are encrypted on your device and only this server can read them.\n\nOn macOS it uses Homebrew's Apache if you have it, otherwise the one built into macOS. On Linux it installs Apache with apt, dnf or pacman. On Windows it installs Apache with Chocolatey.",
+  "category": "web-servers",
+  "icon": "icon.svg",
+  "platforms": [
+    "darwin",
+    "linux",
+    "win32"
+  ],
+  "files": [
+    "icon.svg",
+    "templates/httpd.conf",
+    "templates/mime.types",
+    "site/index.html"
+  ],
+  "requires": [
+    {
+      "id": "httpd",
+      "label": "Apache HTTP Server",
+      "candidates": {
+        "darwin": [
+          {
+            "path": "/opt/homebrew/opt/httpd/bin/httpd",
+            "vars": {
+              "modules": "/opt/homebrew/opt/httpd/lib/httpd/modules"
+            }
+          },
+          {
+            "path": "/usr/local/opt/httpd/bin/httpd",
+            "vars": {
+              "modules": "/usr/local/opt/httpd/lib/httpd/modules"
+            }
+          },
+          {
+            "path": "/usr/sbin/httpd",
+            "vars": {
+              "modules": "/usr/libexec/apache2"
+            }
+          }
+        ],
+        "linux": [
+          {
+            "path": "/usr/sbin/apache2",
+            "vars": {
+              "modules": "/usr/lib/apache2/modules"
+            }
+          },
+          {
+            "path": "/usr/sbin/httpd",
+            "vars": {
+              "modules": "/usr/lib64/httpd/modules"
+            }
+          },
+          {
+            "path": "/usr/bin/httpd",
+            "vars": {
+              "modules": "/usr/lib/httpd/modules"
+            }
+          }
+        ],
+        "win32": [
+          {
+            "path": "{{env.APPDATA}}/Apache24/bin/httpd.exe",
+            "vars": {
+              "modules": "{{env.APPDATA}}/Apache24/modules"
+            }
+          },
+          {
+            "path": "C:/Apache24/bin/httpd.exe",
+            "vars": {
+              "modules": "C:/Apache24/modules"
+            }
+          },
+          {
+            "path": "C:/tools/Apache24/bin/httpd.exe",
+            "vars": {
+              "modules": "C:/tools/Apache24/modules"
+            }
+          }
+        ]
+      },
+      "install": {
+        "darwin": [
+          "command -v brew >/dev/null && brew install httpd || echo 'Homebrew not found, using the system Apache'"
+        ],
+        "linux": [
+          "if command -v apt-get >/dev/null; then sudo -n apt-get install -y apache2; elif command -v dnf >/dev/null; then sudo -n dnf install -y httpd; elif command -v pacman >/dev/null; then sudo -n pacman -S --noconfirm apache; fi"
+        ],
+        "win32": [
+          "if (Get-Command choco -ErrorAction SilentlyContinue) { choco install apache-httpd -y --no-progress --params '\"/noService\"' } else { Write-Output 'Chocolatey not found' }"
+        ]
+      },
+      "hint": "Install Apache yourself (Linux: sudo apt install apache2 · macOS: brew install httpd · Windows: choco install apache-httpd) and press Install again."
+    }
+  ],
+  "settings": [
+    {
+      "key": "port",
+      "label": "Port",
+      "type": "port",
+      "default": 8080,
+      "min": 1024,
+      "group": "Network",
+      "description": "Visitors open http://this-computer:PORT. Ports below 1024 need administrator rights."
+    },
+    {
+      "key": "listen",
+      "label": "Who Can Connect",
+      "type": "select",
+      "default": "all",
+      "group": "Network",
+      "options": [
+        {
+          "label": "Anyone on My Network",
+          "value": "all"
+        },
+        {
+          "label": "Only This Computer",
+          "value": "local"
+        }
+      ]
+    },
+    {
+      "key": "maxClients",
+      "label": "Simultaneous Visitors",
+      "type": "slider",
+      "default": 150,
+      "min": 10,
+      "max": 250,
+      "step": 10,
+      "unit": "visitors",
+      "group": "Network",
+      "description": "How many requests Apache handles at once."
+    },
+    {
+      "key": "index",
+      "label": "Home Page File",
+      "type": "string",
+      "default": "index.html",
+      "group": "Site",
+      "pattern": "^[A-Za-z0-9._-]+$",
+      "patternHint": "A file name like index.html, with no spaces or folders."
+    },
+    {
+      "key": "extraIndex",
+      "label": "Other Home Page Names",
+      "type": "list",
+      "default": [
+        "index.htm"
+      ],
+      "group": "Site",
+      "maxItems": 8,
+      "placeholder": "e.g. home.html",
+      "pattern": "^[A-Za-z0-9._-]+$",
+      "patternHint": "File names only."
+    },
+    {
+      "key": "listing",
+      "label": "Show Folder Listings",
+      "type": "boolean",
+      "default": false,
+      "group": "Site",
+      "description": "Let visitors browse folders that have no home page."
+    },
+    {
+      "key": "notFoundPage",
+      "label": "Custom “Not Found” Page",
+      "type": "file",
+      "default": "",
+      "group": "Site",
+      "accept": [
+        ".html",
+        ".htm"
+      ],
+      "maxFileMB": 2,
+      "description": "Shown when a page doesn't exist."
+    },
+    {
+      "key": "cacheSeconds",
+      "label": "Browser Cache",
+      "type": "number",
+      "default": 300,
+      "min": 0,
+      "max": 31536000,
+      "unit": "seconds",
+      "group": "Performance"
+    }
+  ],
+  "templates": [
+    {
+      "src": "templates/httpd.conf",
+      "dest": "httpd.conf"
+    },
+    {
+      "src": "templates/mime.types",
+      "dest": "mime.types"
+    }
+  ],
+  "seed": [
+    {
+      "src": "site/index.html",
+      "dest": "site/index.html"
+    }
+  ],
+  "run": {
+    "command": "{{bin.httpd}}",
+    "args": [
+      "-f",
+      "{{runtimeDir}}/httpd.conf",
+      "-DFOREGROUND"
+    ]
+  },
+  "health": {
+    "type": "http",
+    "target": "http://127.0.0.1:{{settings.port}}/",
+    "intervalSec": 30
+  },
+  "logs": [
+    {
+      "id": "error",
+      "label": "Error Log",
+      "path": "{{logsDir}}/error.log"
+    },
+    {
+      "id": "access",
+      "label": "Access Log",
+      "path": "{{logsDir}}/access.log"
+    }
+  ],
+  "links": [
+    {
+      "label": "Open Website",
+      "url": "http://{{host}}:{{settings.port}}/"
+    }
+  ],
+  "actions": [
+    {
+      "id": "check-config",
+      "label": "Check Configuration",
+      "description": "Runs apachectl's syntax test on the generated config.",
+      "command": "{{bin.httpd}}",
+      "args": [
+        "-t",
+        "-f",
+        "{{runtimeDir}}/httpd.conf"
+      ]
+    },
+    {
+      "id": "version",
+      "label": "Show Apache Version",
+      "command": "{{bin.httpd}}",
+      "args": [
+        "-v"
+      ]
+    }
+  ],
+  "folders": [
+    {
+      "id": "site",
+      "label": "Website Files",
+      "root": "{{dataDir}}/site",
+      "description": "Everything in this folder is published. Put index.html at the top level.",
+      "accept": [
+        ".html",
+        ".htm",
+        ".css",
+        ".js",
+        ".mjs",
+        ".json",
+        ".txt",
+        ".xml",
+        ".svg",
+        ".png",
+        ".jpg",
+        ".jpeg",
+        ".gif",
+        ".webp",
+        ".avif",
+        ".ico",
+        ".woff",
+        ".woff2",
+        ".ttf",
+        ".otf",
+        ".mp4",
+        ".webm",
+        ".mp3",
+        ".pdf",
+        ".map",
+        ".webmanifest"
+      ],
+      "maxFileMB": 50
+    }
+  ]
+}

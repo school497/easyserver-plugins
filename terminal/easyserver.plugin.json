@@ -1,0 +1,263 @@
+{
+  "schema": 1,
+  "id": "dev.easyserver.terminal",
+  "name": "Terminal",
+  "version": "1.0.0",
+  "developer": "EasyServer",
+  "subtitle": "A command line in your web browser",
+  "description": "Opens a full terminal on this computer in any web browser, using ttyd. Run commands, edit files and manage the server from a phone, tablet or another computer.\n\nAnyone with the username and password gets the same access you have, so choose a strong password. It only listens on this computer until you change Who Can Connect. To reach it from outside your network, put it behind the Cloudflare Tunnel plugin with Cloudflare Access.",
+  "category": "developer-tools",
+  "icon": "icon.svg",
+  "platforms": [
+    "darwin",
+    "linux",
+    "win32"
+  ],
+  "files": [
+    "icon.svg",
+    "scripts/download.mjs",
+    "scripts/lib.mjs"
+  ],
+  "requires": [
+    {
+      "id": "ttyd",
+      "label": "ttyd",
+      "candidates": {
+        "darwin": [
+          {
+            "path": "/opt/homebrew/bin/ttyd"
+          },
+          {
+            "path": "/usr/local/bin/ttyd"
+          },
+          {
+            "path": "@path:ttyd"
+          }
+        ],
+        "linux": [
+          {
+            "path": "/usr/bin/ttyd"
+          },
+          {
+            "path": "/usr/local/bin/ttyd"
+          },
+          {
+            "path": "{{dataDir}}/bin/ttyd"
+          }
+        ],
+        "win32": [
+          {
+            "path": "{{dataDir}}/bin/ttyd.exe"
+          },
+          {
+            "path": "@path:ttyd"
+          }
+        ]
+      },
+      "install": {
+        "darwin": [
+          "brew install ttyd"
+        ],
+        "linux": [
+          {
+            "command": "@node",
+            "args": [
+              "{{pluginDir}}/scripts/download.mjs",
+              "https://github.com/tsl0922/ttyd/releases/download/1.7.7/ttyd.{{#if isArm}}aarch64{{/if}}{{#if isX64}}x86_64{{/if}}",
+              "{{dataDir}}/bin/ttyd"
+            ]
+          }
+        ],
+        "win32": [
+          {
+            "command": "@node",
+            "args": [
+              "{{pluginDir}}/scripts/download.mjs",
+              "https://github.com/tsl0922/ttyd/releases/download/1.7.7/ttyd.win32.exe",
+              "{{dataDir}}/bin/ttyd.exe"
+            ]
+          }
+        ]
+      },
+      "hint": "Install ttyd from github.com/tsl0922/ttyd."
+    }
+  ],
+  "settings": [
+    {
+      "key": "port",
+      "label": "Port",
+      "type": "port",
+      "default": 7681,
+      "min": 1024,
+      "group": "Network"
+    },
+    {
+      "key": "listen",
+      "label": "Who Can Connect",
+      "type": "select",
+      "default": "local",
+      "group": "Network",
+      "options": [
+        {
+          "label": "Only This Computer",
+          "value": "local"
+        },
+        {
+          "label": "Anyone on My Network",
+          "value": "all"
+        }
+      ]
+    },
+    {
+      "key": "username",
+      "label": "Username",
+      "type": "string",
+      "default": "admin",
+      "required": true,
+      "group": "Sign In",
+      "pattern": "^[A-Za-z0-9._-]+$",
+      "patternHint": "Letters, numbers, dots, dashes and underscores."
+    },
+    {
+      "key": "password",
+      "label": "Password",
+      "type": "password",
+      "default": "",
+      "required": true,
+      "pattern": "^[^:]{8,}$",
+      "patternHint": "At least 8 characters, without a colon.",
+      "group": "Sign In"
+    },
+    {
+      "key": "writable",
+      "label": "Allow Typing",
+      "type": "boolean",
+      "default": true,
+      "group": "Sign In",
+      "description": "Off makes the terminal view-only."
+    },
+    {
+      "key": "maxClients",
+      "label": "Maximum Sessions",
+      "type": "slider",
+      "default": 0,
+      "min": 0,
+      "max": 10,
+      "group": "Sign In",
+      "description": "0 means no limit."
+    },
+    {
+      "key": "shell",
+      "label": "Shell",
+      "type": "select",
+      "default": "default",
+      "group": "Terminal",
+      "options": [
+        {
+          "label": "Default",
+          "value": "default"
+        },
+        {
+          "label": "bash",
+          "value": "bash"
+        },
+        {
+          "label": "zsh",
+          "value": "zsh"
+        },
+        {
+          "label": "fish",
+          "value": "fish"
+        },
+        {
+          "label": "PowerShell",
+          "value": "pwsh"
+        },
+        {
+          "label": "Command Prompt",
+          "value": "cmd.exe"
+        }
+      ]
+    },
+    {
+      "key": "startDir",
+      "label": "Start In",
+      "type": "path",
+      "default": "",
+      "group": "Terminal",
+      "placeholder": "Home folder"
+    },
+    {
+      "key": "fontSize",
+      "label": "Text Size",
+      "type": "slider",
+      "default": 14,
+      "min": 10,
+      "max": 24,
+      "unit": "pt",
+      "group": "Terminal"
+    },
+    {
+      "key": "theme",
+      "label": "Appearance",
+      "type": "select",
+      "default": "dark",
+      "group": "Terminal",
+      "options": [
+        {
+          "label": "Dark",
+          "value": "dark"
+        },
+        {
+          "label": "Light",
+          "value": "light"
+        }
+      ]
+    }
+  ],
+  "run": {
+    "command": "{{bin.ttyd}}",
+    "args": [
+      "--port",
+      "{{settings.port}}",
+      "{{#if settings.listen=local}}--interface{{/if}}",
+      "{{#if settings.listen=local}}127.0.0.1{{/if}}",
+      "--credential",
+      "{{settings.username}}:{{settings.password}}",
+      "{{#if settings.writable}}--writable{{/if}}",
+      "--max-clients",
+      "{{settings.maxClients}}",
+      "{{#if settings.startDir}}--cwd{{/if}}",
+      "{{settings.startDir}}",
+      "--client-option",
+      "fontSize={{settings.fontSize}}",
+      "--client-option",
+      "titleFixed={{hostname}}",
+      "--client-option",
+      "{{#if settings.theme=light}}theme={\"background\":\"#ffffff\",\"foreground\":\"#1d1d1f\",\"cursor\":\"#1d1d1f\",\"selectionBackground\":\"#b3d7ff\"}{{/if}}{{#if settings.theme=dark}}theme={\"background\":\"#1e1e1e\",\"foreground\":\"#f5f5f7\",\"cursor\":\"#f5f5f7\"}{{/if}}",
+      "--terminal-type",
+      "xterm-256color",
+      "{{#if settings.shell=default}}{{#if isWin}}powershell.exe{{/if}}{{#if isMac}}/bin/zsh{{/if}}{{#if isLinux}}/bin/bash{{/if}}{{/if}}{{#unless settings.shell=default}}{{settings.shell}}{{/unless}}"
+    ]
+  },
+  "health": {
+    "type": "http",
+    "target": "http://127.0.0.1:{{settings.port}}/"
+  },
+  "links": [
+    {
+      "label": "Open Terminal",
+      "url": "http://{{host}}:{{settings.port}}/"
+    }
+  ],
+  "actions": [
+    {
+      "id": "version",
+      "label": "ttyd Version",
+      "command": "{{bin.ttyd}}",
+      "args": [
+        "--version"
+      ]
+    }
+  ]
+}

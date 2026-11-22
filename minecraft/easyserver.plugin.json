@@ -1,0 +1,483 @@
+{
+  "schema": 1,
+  "id": "dev.easyserver.minecraft",
+  "name": "Minecraft Server",
+  "version": "1.0.0",
+  "developer": "EasyServer",
+  "subtitle": "Host a Java Edition world for friends",
+  "description": "Hosts a Minecraft: Java Edition world using Mojang’s official server, downloaded straight from Mojang and checked before it runs.\n\nPick the version, game mode, difficulty and player limit in Settings. Operators and allowed players apply as soon as the world is up. Back Up World saves a copy to Backups that you can download, and Server Files holds mods, datapacks and the world itself.\n\nPlayers on your network join with this computer’s address. For friends elsewhere, forward the port on your router.\n\nYou must accept the Minecraft EULA (aka.ms/MinecraftEULA) in Settings before the server will start.",
+  "category": "games",
+  "icon": "icon.svg",
+  "platforms": [
+    "darwin",
+    "linux",
+    "win32"
+  ],
+  "files": [
+    "icon.svg",
+    "scripts/backup.mjs",
+    "scripts/fetch-server.mjs",
+    "scripts/lib.mjs",
+    "scripts/rcon.mjs",
+    "scripts/server.mjs"
+  ],
+  "requires": [
+    {
+      "id": "java",
+      "label": "Java 21",
+      "candidates": {
+        "darwin": [
+          {
+            "path": "/opt/homebrew/opt/openjdk@21/bin/java"
+          },
+          {
+            "path": "/opt/homebrew/opt/openjdk/bin/java"
+          },
+          {
+            "path": "/usr/local/opt/openjdk@21/bin/java"
+          },
+          {
+            "path": "/usr/local/opt/openjdk/bin/java"
+          },
+          {
+            "path": "/Library/Java/JavaVirtualMachines/*/Contents/Home/bin/java"
+          }
+        ],
+        "linux": [
+          {
+            "path": "/usr/lib/jvm/java-2*-openjdk*/bin/java"
+          },
+          {
+            "path": "/usr/lib/jvm/temurin-2*/bin/java"
+          },
+          {
+            "path": "/usr/lib/jvm/jre-2*/bin/java"
+          },
+          {
+            "path": "@path:java"
+          }
+        ],
+        "win32": [
+          {
+            "path": "C:/Program Files/Eclipse Adoptium/jre-2*/bin/java.exe"
+          },
+          {
+            "path": "C:/Program Files/Eclipse Adoptium/jdk-2*/bin/java.exe"
+          },
+          {
+            "path": "C:/Program Files/Microsoft/jdk-2*/bin/java.exe"
+          },
+          {
+            "path": "C:/Program Files/Java/jdk-2*/bin/java.exe"
+          },
+          {
+            "path": "@path:java"
+          }
+        ]
+      },
+      "install": {
+        "darwin": [
+          "brew install openjdk@21"
+        ],
+        "linux": [
+          "if command -v apt-get >/dev/null; then sudo -n apt-get install -y openjdk-21-jre-headless; elif command -v dnf >/dev/null; then sudo -n dnf install -y java-21-openjdk-headless; elif command -v pacman >/dev/null; then sudo -n pacman -S --noconfirm jre21-openjdk-headless; else echo \"No supported package manager found\"; exit 1; fi"
+        ],
+        "win32": [
+          "winget install --id EclipseAdoptium.Temurin.21.JRE -e --silent --accept-package-agreements --accept-source-agreements --disable-interactivity"
+        ]
+      },
+      "hint": "Install Java 21 (for example from adoptium.net)."
+    },
+    {
+      "id": "server",
+      "label": "Minecraft server",
+      "candidates": {
+        "darwin": [
+          {
+            "path": "{{dataDir}}/server/server.jar"
+          }
+        ],
+        "linux": [
+          {
+            "path": "{{dataDir}}/server/server.jar"
+          }
+        ],
+        "win32": [
+          {
+            "path": "{{dataDir}}/server/server.jar"
+          }
+        ]
+      },
+      "install": {
+        "darwin": [
+          {
+            "command": "@node",
+            "args": [
+              "{{pluginDir}}/scripts/fetch-server.mjs"
+            ]
+          }
+        ],
+        "linux": [
+          {
+            "command": "@node",
+            "args": [
+              "{{pluginDir}}/scripts/fetch-server.mjs"
+            ]
+          }
+        ],
+        "win32": [
+          {
+            "command": "@node",
+            "args": [
+              "{{pluginDir}}/scripts/fetch-server.mjs"
+            ]
+          }
+        ]
+      },
+      "hint": "Couldn’t download the server from Mojang. Check this computer’s internet connection."
+    }
+  ],
+  "settings": [
+    {
+      "key": "eula",
+      "label": "I Accept the Minecraft EULA",
+      "type": "boolean",
+      "default": false,
+      "group": "Server",
+      "description": "Required by Mojang. Read it at aka.ms/MinecraftEULA."
+    },
+    {
+      "key": "version",
+      "label": "Version",
+      "type": "string",
+      "default": "latest",
+      "group": "Server",
+      "pattern": "^(latest|snapshot|\\d+\\.\\d+(\\.\\d+)?)$",
+      "patternHint": "latest, snapshot, or a version like 1.21.4.",
+      "description": "Changing it downloads that version on the next start."
+    },
+    {
+      "key": "port",
+      "label": "Port",
+      "type": "port",
+      "default": 25565,
+      "min": 1024,
+      "group": "Server"
+    },
+    {
+      "key": "memory",
+      "label": "Memory",
+      "type": "slider",
+      "default": 2048,
+      "min": 1024,
+      "max": 16384,
+      "step": 512,
+      "unit": "MB",
+      "group": "Server"
+    },
+    {
+      "key": "motd",
+      "label": "Server Message",
+      "type": "string",
+      "default": "An EasyServer world",
+      "group": "Server",
+      "description": "Shown in the multiplayer server list."
+    },
+    {
+      "key": "levelName",
+      "label": "World Name",
+      "type": "string",
+      "default": "world",
+      "group": "World",
+      "pattern": "^[A-Za-z0-9 _-]+$",
+      "patternHint": "Letters, numbers, spaces, dashes and underscores."
+    },
+    {
+      "key": "seed",
+      "label": "Seed",
+      "type": "string",
+      "default": "",
+      "group": "World",
+      "placeholder": "Random",
+      "description": "Only used when a new world is created."
+    },
+    {
+      "key": "gamemode",
+      "label": "Game Mode",
+      "type": "select",
+      "default": "survival",
+      "group": "World",
+      "options": [
+        {
+          "label": "Survival",
+          "value": "survival"
+        },
+        {
+          "label": "Creative",
+          "value": "creative"
+        },
+        {
+          "label": "Adventure",
+          "value": "adventure"
+        },
+        {
+          "label": "Spectator",
+          "value": "spectator"
+        }
+      ]
+    },
+    {
+      "key": "difficulty",
+      "label": "Difficulty",
+      "type": "select",
+      "default": "normal",
+      "group": "World",
+      "options": [
+        {
+          "label": "Peaceful",
+          "value": "peaceful"
+        },
+        {
+          "label": "Easy",
+          "value": "easy"
+        },
+        {
+          "label": "Normal",
+          "value": "normal"
+        },
+        {
+          "label": "Hard",
+          "value": "hard"
+        }
+      ]
+    },
+    {
+      "key": "hardcore",
+      "label": "Hardcore",
+      "type": "boolean",
+      "default": false,
+      "group": "World"
+    },
+    {
+      "key": "pvp",
+      "label": "Player vs. Player",
+      "type": "boolean",
+      "default": true,
+      "group": "World"
+    },
+    {
+      "key": "allowFlight",
+      "label": "Allow Flight",
+      "type": "boolean",
+      "default": false,
+      "group": "World"
+    },
+    {
+      "key": "commandBlocks",
+      "label": "Command Blocks",
+      "type": "boolean",
+      "default": false,
+      "group": "World"
+    },
+    {
+      "key": "viewDistance",
+      "label": "View Distance",
+      "type": "slider",
+      "default": 10,
+      "min": 3,
+      "max": 32,
+      "unit": "chunks",
+      "group": "Performance"
+    },
+    {
+      "key": "simulationDistance",
+      "label": "Simulation Distance",
+      "type": "slider",
+      "default": 10,
+      "min": 3,
+      "max": 32,
+      "unit": "chunks",
+      "group": "Performance"
+    },
+    {
+      "key": "maxPlayers",
+      "label": "Maximum Players",
+      "type": "slider",
+      "default": 10,
+      "min": 1,
+      "max": 100,
+      "group": "Players"
+    },
+    {
+      "key": "onlineMode",
+      "label": "Require Minecraft Accounts",
+      "type": "boolean",
+      "default": true,
+      "group": "Players",
+      "description": "Checks every player with Mojang. Leave on unless you know why you need it off."
+    },
+    {
+      "key": "operators",
+      "label": "Operators",
+      "type": "list",
+      "default": [],
+      "group": "Players",
+      "placeholder": "Player name",
+      "pattern": "^[A-Za-z0-9_]{3,16}$",
+      "patternHint": "A Minecraft username.",
+      "restart": false
+    },
+    {
+      "key": "whitelist",
+      "label": "Only Allowed Players",
+      "type": "boolean",
+      "default": false,
+      "group": "Players"
+    },
+    {
+      "key": "whitelistPlayers",
+      "label": "Allowed Players",
+      "type": "list",
+      "default": [],
+      "group": "Players",
+      "placeholder": "Player name",
+      "pattern": "^[A-Za-z0-9_]{3,16}$",
+      "patternHint": "A Minecraft username.",
+      "visibleIf": {
+        "key": "whitelist",
+        "equals": true
+      },
+      "restart": false
+    },
+    {
+      "key": "spawnProtection",
+      "label": "Spawn Protection",
+      "type": "number",
+      "default": 16,
+      "min": 0,
+      "max": 256,
+      "unit": "blocks",
+      "group": "Players"
+    },
+    {
+      "key": "keepBackups",
+      "label": "Backups to Keep",
+      "type": "slider",
+      "default": 10,
+      "min": 1,
+      "max": 50,
+      "group": "Backups",
+      "restart": false
+    },
+    {
+      "key": "rconPort",
+      "label": "Console Port",
+      "type": "port",
+      "default": 25575,
+      "min": 1024,
+      "group": "Advanced",
+      "description": "Local-only port EasyServer uses to send commands to the server."
+    }
+  ],
+  "run": {
+    "command": "@node",
+    "args": [
+      "{{pluginDir}}/scripts/server.mjs"
+    ],
+    "cwd": "{{dataDir}}/server",
+    "stop": {
+      "command": "@node",
+      "args": [
+        "{{pluginDir}}/scripts/rcon.mjs",
+        "stop"
+      ],
+      "timeoutSec": 45
+    }
+  },
+  "health": {
+    "type": "tcp",
+    "target": "127.0.0.1:{{settings.port}}",
+    "intervalSec": 30
+  },
+  "actions": [
+    {
+      "id": "players",
+      "label": "Who’s Online",
+      "command": "@node",
+      "args": [
+        "{{pluginDir}}/scripts/rcon.mjs",
+        "list"
+      ]
+    },
+    {
+      "id": "save",
+      "label": "Save World",
+      "command": "@node",
+      "args": [
+        "{{pluginDir}}/scripts/rcon.mjs",
+        "save"
+      ]
+    },
+    {
+      "id": "backup",
+      "label": "Back Up World",
+      "background": true,
+      "command": "@node",
+      "args": [
+        "{{pluginDir}}/scripts/backup.mjs"
+      ]
+    },
+    {
+      "id": "apply",
+      "label": "Apply Operators and Allowed Players",
+      "command": "@node",
+      "args": [
+        "{{pluginDir}}/scripts/rcon.mjs",
+        "players"
+      ]
+    },
+    {
+      "id": "day",
+      "label": "Set Time to Day",
+      "command": "@node",
+      "args": [
+        "{{pluginDir}}/scripts/rcon.mjs",
+        "day"
+      ]
+    },
+    {
+      "id": "weather",
+      "label": "Clear Weather",
+      "command": "@node",
+      "args": [
+        "{{pluginDir}}/scripts/rcon.mjs",
+        "weather"
+      ]
+    },
+    {
+      "id": "update",
+      "label": "Download Server Again",
+      "description": "Gets the version in Settings fresh from Mojang. Restart afterwards.",
+      "background": true,
+      "command": "@node",
+      "args": [
+        "{{pluginDir}}/scripts/fetch-server.mjs",
+        "--force"
+      ]
+    }
+  ],
+  "folders": [
+    {
+      "id": "backups",
+      "label": "Backups",
+      "root": "{{dataDir}}/backups"
+    },
+    {
+      "id": "server",
+      "label": "Server Files",
+      "root": "{{dataDir}}/server",
+      "maxFileMB": 100,
+      "description": "The world, mods, datapacks and config. Stop the server before changing the world."
+    }
+  ]
+}

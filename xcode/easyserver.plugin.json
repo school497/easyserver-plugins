@@ -1,0 +1,226 @@
+{
+  "schema": 1,
+  "id": "dev.easyserver.xcode",
+  "name": "Xcode Builds",
+  "version": "1.0.0",
+  "developer": "EasyServer",
+  "subtitle": "Build and test Xcode projects remotely",
+  "description": "Turns a Mac into a build machine for your iOS, iPadOS and macOS apps using Xcode’s command-line tools.\n\nUpload a project folder to Projects. It builds automatically once the upload settles, or use Build, Run Tests and Archive. Built apps and archives are zipped into Builds for you to download, and every line of xcodebuild output is in Logs.\n\nNeeds Xcode installed from the Mac App Store, opened once to finish setup.",
+  "category": "developer-tools",
+  "icon": "icon.svg",
+  "platforms": [
+    "darwin"
+  ],
+  "files": [
+    "icon.svg",
+    "scripts/lib.mjs",
+    "scripts/xcode.mjs"
+  ],
+  "requires": [
+    {
+      "id": "xcodebuild",
+      "label": "Xcode command-line tools",
+      "candidates": {
+        "darwin": [
+          {
+            "path": "/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild"
+          },
+          {
+            "path": "/Applications/Xcode*.app/Contents/Developer/usr/bin/xcodebuild"
+          },
+          {
+            "path": "/usr/bin/xcodebuild"
+          }
+        ]
+      },
+      "hint": "Install Xcode from the Mac App Store and open it once."
+    }
+  ],
+  "settings": [
+    {
+      "key": "project",
+      "label": "Project",
+      "type": "string",
+      "default": "",
+      "placeholder": "Found automatically",
+      "group": "Project",
+      "description": "Path inside Projects, like MyApp/MyApp.xcworkspace. Leave empty to use the first one found."
+    },
+    {
+      "key": "scheme",
+      "label": "Scheme",
+      "type": "string",
+      "default": "",
+      "placeholder": "First shared scheme",
+      "group": "Project"
+    },
+    {
+      "key": "configuration",
+      "label": "Configuration",
+      "type": "select",
+      "default": "Debug",
+      "group": "Project",
+      "options": [
+        {
+          "label": "Debug",
+          "value": "Debug"
+        },
+        {
+          "label": "Release",
+          "value": "Release"
+        }
+      ]
+    },
+    {
+      "key": "destination",
+      "label": "Destination",
+      "type": "select",
+      "default": "generic/platform=iOS Simulator",
+      "group": "Project",
+      "options": [
+        {
+          "label": "iOS Simulator",
+          "value": "generic/platform=iOS Simulator"
+        },
+        {
+          "label": "iOS Device",
+          "value": "generic/platform=iOS"
+        },
+        {
+          "label": "Mac",
+          "value": "platform=macOS"
+        },
+        {
+          "label": "visionOS Simulator",
+          "value": "generic/platform=visionOS Simulator"
+        }
+      ]
+    },
+    {
+      "key": "buildOnUpload",
+      "label": "Build When Projects Change",
+      "type": "boolean",
+      "default": true,
+      "group": "Automation"
+    },
+    {
+      "key": "clean",
+      "label": "Clean Before Building",
+      "type": "boolean",
+      "default": false,
+      "group": "Automation",
+      "restart": false
+    },
+    {
+      "key": "skipSigning",
+      "label": "Skip Code Signing",
+      "type": "boolean",
+      "default": true,
+      "group": "Automation",
+      "restart": false,
+      "description": "Simulator and test builds don’t need a certificate. Archives always sign."
+    },
+    {
+      "key": "extraArgs",
+      "label": "Extra xcodebuild Arguments",
+      "type": "list",
+      "default": [],
+      "group": "Automation",
+      "placeholder": "e.g. -quiet",
+      "restart": false
+    }
+  ],
+  "run": {
+    "command": "@node",
+    "args": [
+      "{{pluginDir}}/scripts/xcode.mjs",
+      "watch"
+    ]
+  },
+  "actions": [
+    {
+      "id": "build",
+      "label": "Build",
+      "background": true,
+      "command": "@node",
+      "args": [
+        "{{pluginDir}}/scripts/xcode.mjs",
+        "build"
+      ]
+    },
+    {
+      "id": "test",
+      "label": "Run Tests",
+      "background": true,
+      "command": "@node",
+      "args": [
+        "{{pluginDir}}/scripts/xcode.mjs",
+        "test"
+      ]
+    },
+    {
+      "id": "archive",
+      "label": "Archive",
+      "background": true,
+      "command": "@node",
+      "args": [
+        "{{pluginDir}}/scripts/xcode.mjs",
+        "archive"
+      ]
+    },
+    {
+      "id": "schemes",
+      "label": "List Schemes",
+      "timeoutSec": 120,
+      "command": "@node",
+      "args": [
+        "{{pluginDir}}/scripts/xcode.mjs",
+        "schemes"
+      ]
+    },
+    {
+      "id": "simulators",
+      "label": "List Simulators",
+      "command": "@node",
+      "args": [
+        "{{pluginDir}}/scripts/xcode.mjs",
+        "simulators"
+      ]
+    },
+    {
+      "id": "version",
+      "label": "Xcode Version",
+      "command": "{{bin.xcodebuild}}",
+      "args": [
+        "-version"
+      ]
+    },
+    {
+      "id": "license",
+      "label": "Accept Xcode License",
+      "command": "/usr/bin/sudo",
+      "args": [
+        "-n",
+        "{{bin.xcodebuild}}",
+        "-license",
+        "accept"
+      ],
+      "description": "Needs passwordless sudo, or accept it once in Xcode."
+    }
+  ],
+  "folders": [
+    {
+      "id": "projects",
+      "label": "Projects",
+      "root": "{{dataDir}}/projects",
+      "maxFileMB": 100,
+      "description": "Upload your project folder (with its .xcodeproj or .xcworkspace)."
+    },
+    {
+      "id": "builds",
+      "label": "Builds",
+      "root": "{{dataDir}}/builds",
+      "description": "Zipped apps and archives."
+    }
+  ]
+}

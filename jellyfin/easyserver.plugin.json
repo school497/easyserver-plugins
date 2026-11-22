@@ -1,0 +1,161 @@
+{
+  "schema": 1,
+  "id": "dev.easyserver.jellyfin",
+  "name": "Jellyfin",
+  "version": "1.0.0",
+  "developer": "EasyServer",
+  "subtitle": "Free media server with no account",
+  "description": "Runs Jellyfin, the free and open-source media server. Stream your movies, shows, music and photos to the Jellyfin apps or any web browser, with no account or subscription.\n\nUpload media to the Movies, TV Shows, Music and Photos folders, then add them as libraries during Jellyfin’s first-run setup. Show Media Folder Paths gives the exact locations.\n\nJellyfin keeps its database with this plugin, so it doesn’t touch another Jellyfin install on the same computer.",
+  "category": "media",
+  "icon": "icon.svg",
+  "platforms": [
+    "darwin",
+    "linux",
+    "win32"
+  ],
+  "files": [
+    "icon.svg",
+    "scripts/lib.mjs",
+    "scripts/media.mjs"
+  ],
+  "requires": [
+    {
+      "id": "jellyfin",
+      "label": "Jellyfin Server",
+      "candidates": {
+        "darwin": [
+          {
+            "path": "/Applications/Jellyfin.app/Contents/MacOS/jellyfin"
+          },
+          {
+            "path": "/Applications/Jellyfin Server.app/Contents/MacOS/jellyfin"
+          }
+        ],
+        "linux": [
+          {
+            "path": "/usr/lib/jellyfin/bin/jellyfin",
+            "vars": {
+              "webdir": "/usr/share/jellyfin/web",
+              "ffmpeg": "/usr/lib/jellyfin-ffmpeg/ffmpeg"
+            }
+          }
+        ],
+        "win32": [
+          {
+            "path": "C:/Program Files/Jellyfin/Server/jellyfin.exe"
+          }
+        ]
+      },
+      "install": {
+        "darwin": [
+          "brew install --cask jellyfin"
+        ],
+        "linux": [
+          "curl -fsSL https://repo.jellyfin.org/install-debuntu.sh | sudo -n bash && sudo -n systemctl disable --now jellyfin"
+        ],
+        "win32": [
+          "winget install --id Jellyfin.Server -e --silent --accept-package-agreements --accept-source-agreements --disable-interactivity"
+        ]
+      },
+      "hint": "Install Jellyfin Server from jellyfin.org/downloads/server."
+    }
+  ],
+  "settings": [
+    {
+      "key": "port",
+      "label": "Web Port",
+      "type": "port",
+      "default": 8096,
+      "min": 1024,
+      "restart": false,
+      "description": "The port set in Jellyfin’s Dashboard › Networking. Change it there first, then here."
+    }
+  ],
+  "run": {
+    "command": "{{bin.jellyfin}}",
+    "args": [
+      "--datadir",
+      "{{dataDir}}/data",
+      "--cachedir",
+      "{{dataDir}}/cache",
+      "--configdir",
+      "{{dataDir}}/config",
+      "--logdir",
+      "{{logsDir}}/jellyfin"
+    ]
+  },
+  "platformRun": {
+    "linux": {
+      "command": "{{bin.jellyfin}}",
+      "args": [
+        "--datadir",
+        "{{dataDir}}/data",
+        "--cachedir",
+        "{{dataDir}}/cache",
+        "--configdir",
+        "{{dataDir}}/config",
+        "--logdir",
+        "{{logsDir}}/jellyfin",
+        "--webdir",
+        "{{req.jellyfin.webdir}}",
+        "--ffmpeg",
+        "{{req.jellyfin.ffmpeg}}"
+      ]
+    }
+  },
+  "health": {
+    "type": "http",
+    "target": "http://127.0.0.1:{{settings.port}}/health"
+  },
+  "links": [
+    {
+      "label": "Open Jellyfin",
+      "url": "http://{{host}}:{{settings.port}}/"
+    }
+  ],
+  "logs": [
+    {
+      "id": "jellyfin",
+      "label": "Jellyfin Log",
+      "path": "{{logsDir}}/jellyfin/log_latest.log"
+    }
+  ],
+  "actions": [
+    {
+      "id": "paths",
+      "label": "Show Media Folder Paths",
+      "command": "@node",
+      "args": [
+        "{{pluginDir}}/scripts/media.mjs",
+        "paths"
+      ]
+    }
+  ],
+  "folders": [
+    {
+      "id": "movies",
+      "label": "Movies",
+      "root": "{{dataDir}}/media/movies",
+      "maxFileMB": 100
+    },
+    {
+      "id": "tv",
+      "label": "TV Shows",
+      "root": "{{dataDir}}/media/tv-shows",
+      "maxFileMB": 100,
+      "description": "One folder per show, then Season 01, Season 02…"
+    },
+    {
+      "id": "music",
+      "label": "Music",
+      "root": "{{dataDir}}/media/music",
+      "maxFileMB": 100
+    },
+    {
+      "id": "photos",
+      "label": "Photos",
+      "root": "{{dataDir}}/media/photos",
+      "maxFileMB": 100
+    }
+  ]
+}

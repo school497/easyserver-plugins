@@ -1,0 +1,292 @@
+{
+  "schema": 1,
+  "id": "dev.easyserver.ollama",
+  "name": "Ollama",
+  "version": "1.0.0",
+  "developer": "EasyServer",
+  "subtitle": "Run open AI models on your server",
+  "description": "Runs large language models like Llama, Gemma, Qwen and Mistral on this computer with Ollama, and serves them over Ollama’s API to apps on your network.\n\nList the models you want in Settings and they download when the plugin starts. Upload a Modelfile to make a custom model with its own system prompt and parameters.\n\nIf the Ollama desktop app is already running on this computer, quit it first or choose a different port.",
+  "category": "computing",
+  "icon": "icon.svg",
+  "platforms": [
+    "darwin",
+    "linux",
+    "win32"
+  ],
+  "files": [
+    "icon.svg",
+    "scripts/lib.mjs",
+    "scripts/models.mjs",
+    "scripts/serve.mjs"
+  ],
+  "requires": [
+    {
+      "id": "ollama",
+      "label": "Ollama",
+      "candidates": {
+        "darwin": [
+          {
+            "path": "/opt/homebrew/bin/ollama"
+          },
+          {
+            "path": "/usr/local/bin/ollama"
+          },
+          {
+            "path": "/Applications/Ollama.app/Contents/Resources/ollama"
+          },
+          {
+            "path": "@path:ollama"
+          }
+        ],
+        "linux": [
+          {
+            "path": "/usr/local/bin/ollama"
+          },
+          {
+            "path": "/usr/bin/ollama"
+          },
+          {
+            "path": "@path:ollama"
+          }
+        ],
+        "win32": [
+          {
+            "path": "{{env.LOCALAPPDATA}}/Programs/Ollama/ollama.exe"
+          },
+          {
+            "path": "@path:ollama"
+          }
+        ]
+      },
+      "install": {
+        "darwin": [
+          "brew install ollama"
+        ],
+        "linux": [
+          "curl -fsSL https://ollama.com/install.sh | sudo -n sh"
+        ],
+        "win32": [
+          "winget install --id Ollama.Ollama -e --silent --accept-package-agreements --accept-source-agreements --disable-interactivity"
+        ]
+      },
+      "hint": "Install Ollama from ollama.com/download."
+    }
+  ],
+  "settings": [
+    {
+      "key": "port",
+      "label": "Port",
+      "type": "port",
+      "default": 11434,
+      "min": 1024,
+      "group": "Network"
+    },
+    {
+      "key": "listen",
+      "label": "Who Can Connect",
+      "type": "select",
+      "default": "local",
+      "group": "Network",
+      "options": [
+        {
+          "label": "Only This Computer",
+          "value": "local"
+        },
+        {
+          "label": "Anyone on My Network",
+          "value": "all"
+        }
+      ]
+    },
+    {
+      "key": "origins",
+      "label": "Allowed Web Origins",
+      "type": "list",
+      "default": [],
+      "group": "Network",
+      "placeholder": "https://chat.example.com",
+      "description": "Websites allowed to call the API from a browser. Leave empty for apps and scripts."
+    },
+    {
+      "key": "models",
+      "label": "Models",
+      "type": "list",
+      "default": [
+        "llama3.2:3b"
+      ],
+      "group": "Models",
+      "placeholder": "e.g. gemma3:4b",
+      "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._/-]*(:[a-zA-Z0-9._-]+)?$",
+      "patternHint": "A model name from ollama.com/library, like qwen2.5:7b.",
+      "restart": false
+    },
+    {
+      "key": "pullOnStart",
+      "label": "Download Listed Models on Start",
+      "type": "boolean",
+      "default": true,
+      "group": "Models",
+      "restart": false
+    },
+    {
+      "key": "modelsDir",
+      "label": "Model Folder",
+      "type": "path",
+      "default": "",
+      "group": "Models",
+      "placeholder": "Inside EasyServer",
+      "description": "Leave empty to keep models with this plugin. Point it at an existing folder to reuse models you already have."
+    },
+    {
+      "key": "contextLength",
+      "label": "Context Length",
+      "type": "select",
+      "default": "4096",
+      "group": "Performance",
+      "options": [
+        {
+          "label": "2K",
+          "value": "2048"
+        },
+        {
+          "label": "4K",
+          "value": "4096"
+        },
+        {
+          "label": "8K",
+          "value": "8192"
+        },
+        {
+          "label": "16K",
+          "value": "16384"
+        },
+        {
+          "label": "32K",
+          "value": "32768"
+        }
+      ]
+    },
+    {
+      "key": "keepAlive",
+      "label": "Keep Models Loaded",
+      "type": "slider",
+      "default": 5,
+      "min": 0,
+      "max": 60,
+      "unit": "min",
+      "group": "Performance"
+    },
+    {
+      "key": "parallel",
+      "label": "Requests at Once",
+      "type": "slider",
+      "default": 1,
+      "min": 1,
+      "max": 8,
+      "group": "Performance"
+    },
+    {
+      "key": "maxLoaded",
+      "label": "Models in Memory",
+      "type": "slider",
+      "default": 1,
+      "min": 1,
+      "max": 4,
+      "group": "Performance"
+    },
+    {
+      "key": "flashAttention",
+      "label": "Flash Attention",
+      "type": "boolean",
+      "default": false,
+      "group": "Performance",
+      "description": "Uses less memory on supported GPUs."
+    }
+  ],
+  "run": {
+    "command": "@node",
+    "args": [
+      "{{pluginDir}}/scripts/serve.mjs"
+    ],
+    "env": {
+      "OLLAMA_HOST": "{{#if settings.listen=all}}0.0.0.0{{/if}}{{#if settings.listen=local}}127.0.0.1{{/if}}:{{settings.port}}",
+      "OLLAMA_MODELS": "{{#if settings.modelsDir}}{{settings.modelsDir}}{{/if}}{{#unless settings.modelsDir}}{{dataDir}}/models{{/unless}}",
+      "OLLAMA_ORIGINS": "{{settings.origins}}",
+      "OLLAMA_KEEP_ALIVE": "{{settings.keepAlive}}m",
+      "OLLAMA_NUM_PARALLEL": "{{settings.parallel}}",
+      "OLLAMA_MAX_LOADED_MODELS": "{{settings.maxLoaded}}",
+      "OLLAMA_CONTEXT_LENGTH": "{{settings.contextLength}}",
+      "OLLAMA_FLASH_ATTENTION": "{{#if settings.flashAttention}}1{{/if}}"
+    }
+  },
+  "health": {
+    "type": "http",
+    "target": "http://127.0.0.1:{{settings.port}}/api/version",
+    "intervalSec": 30
+  },
+  "links": [
+    {
+      "label": "API Address",
+      "url": "http://{{host}}:{{settings.port}}/"
+    }
+  ],
+  "actions": [
+    {
+      "id": "pull",
+      "label": "Download Models",
+      "description": "Downloads every model in Settings that isn’t here yet.",
+      "background": true,
+      "command": "@node",
+      "args": [
+        "{{pluginDir}}/scripts/models.mjs",
+        "pull"
+      ]
+    },
+    {
+      "id": "create",
+      "label": "Create Models from Modelfiles",
+      "background": true,
+      "command": "@node",
+      "args": [
+        "{{pluginDir}}/scripts/models.mjs",
+        "create"
+      ]
+    },
+    {
+      "id": "list",
+      "label": "Installed Models",
+      "command": "{{bin.ollama}}",
+      "args": [
+        "list"
+      ]
+    },
+    {
+      "id": "ps",
+      "label": "Loaded Models",
+      "command": "{{bin.ollama}}",
+      "args": [
+        "ps"
+      ]
+    },
+    {
+      "id": "prune",
+      "label": "Remove Unlisted Models",
+      "confirm": "Delete every model that isn’t in Settings or made from a Modelfile?",
+      "destructive": true,
+      "command": "@node",
+      "args": [
+        "{{pluginDir}}/scripts/models.mjs",
+        "prune"
+      ]
+    }
+  ],
+  "folders": [
+    {
+      "id": "modelfiles",
+      "label": "Modelfiles",
+      "root": "{{dataDir}}/modelfiles",
+      "maxFileMB": 1,
+      "description": "Each file becomes a model named after it. Run Create Models from Modelfiles after uploading."
+    }
+  ]
+}

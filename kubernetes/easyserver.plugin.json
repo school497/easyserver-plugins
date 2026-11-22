@@ -1,0 +1,418 @@
+{
+  "schema": 1,
+  "id": "dev.easyserver.kubernetes",
+  "name": "Kubernetes",
+  "version": "1.0.0",
+  "developer": "EasyServer",
+  "subtitle": "A real cluster on one computer",
+  "description": "Runs a Kubernetes cluster on this computer with kind (Kubernetes in Docker), the tool the Kubernetes project uses to test itself.\n\nStarting the plugin creates the cluster, or resumes it. Upload YAML to Manifests and it’s applied on every start, or with Apply Manifests. Download kubeconfig.yaml from Cluster Access to use kubectl from another computer.\n\nIngress ports map 80 and 443 in the cluster to ports on this computer, ready for an ingress controller. Needs Docker; kind and kubectl install automatically.",
+  "category": "developer-tools",
+  "icon": "icon.svg",
+  "platforms": [
+    "darwin",
+    "linux",
+    "win32"
+  ],
+  "files": [
+    "icon.svg",
+    "scripts/cluster.mjs",
+    "scripts/download.mjs",
+    "scripts/lib.mjs"
+  ],
+  "requires": [
+    {
+      "id": "docker",
+      "label": "Docker",
+      "candidates": {
+        "darwin": [
+          {
+            "path": "/usr/local/bin/docker"
+          },
+          {
+            "path": "/opt/homebrew/bin/docker"
+          },
+          {
+            "path": "/Applications/Docker.app/Contents/Resources/bin/docker"
+          },
+          {
+            "path": "@path:docker"
+          }
+        ],
+        "linux": [
+          {
+            "path": "/usr/bin/docker"
+          },
+          {
+            "path": "/usr/local/bin/docker"
+          },
+          {
+            "path": "@path:docker"
+          }
+        ],
+        "win32": [
+          {
+            "path": "C:/Program Files/Docker/Docker/resources/bin/docker.exe"
+          },
+          {
+            "path": "@path:docker"
+          }
+        ]
+      },
+      "install": {
+        "darwin": [
+          "brew install --cask docker"
+        ],
+        "linux": [
+          "curl -fsSL https://get.docker.com | sudo -n sh && sudo -n usermod -aG docker \"$USER\""
+        ],
+        "win32": [
+          "winget install --id Docker.DockerDesktop -e --silent --accept-package-agreements --accept-source-agreements --disable-interactivity"
+        ]
+      },
+      "hint": "Install Docker Desktop (docker.com) or Docker Engine, open it once, then press Install again."
+    },
+    {
+      "id": "kind",
+      "label": "kind",
+      "candidates": {
+        "darwin": [
+          {
+            "path": "/opt/homebrew/bin/kind"
+          },
+          {
+            "path": "/usr/local/bin/kind"
+          },
+          {
+            "path": "{{dataDir}}/bin/kind"
+          }
+        ],
+        "linux": [
+          {
+            "path": "/usr/local/bin/kind"
+          },
+          {
+            "path": "/usr/bin/kind"
+          },
+          {
+            "path": "{{dataDir}}/bin/kind"
+          }
+        ],
+        "win32": [
+          {
+            "path": "{{env.LOCALAPPDATA}}/Microsoft/WinGet/Links/kind.exe"
+          },
+          {
+            "path": "{{dataDir}}/bin/kind.exe"
+          }
+        ]
+      },
+      "install": {
+        "darwin": [
+          {
+            "command": "@node",
+            "args": [
+              "{{pluginDir}}/scripts/download.mjs",
+              "https://kind.sigs.k8s.io/dl/v0.25.0/kind-darwin-{{#if isArm}}arm64{{/if}}{{#if isX64}}amd64{{/if}}",
+              "{{dataDir}}/bin/kind"
+            ]
+          }
+        ],
+        "linux": [
+          {
+            "command": "@node",
+            "args": [
+              "{{pluginDir}}/scripts/download.mjs",
+              "https://kind.sigs.k8s.io/dl/v0.25.0/kind-linux-{{#if isArm}}arm64{{/if}}{{#if isX64}}amd64{{/if}}",
+              "{{dataDir}}/bin/kind"
+            ]
+          }
+        ],
+        "win32": [
+          {
+            "command": "@node",
+            "args": [
+              "{{pluginDir}}/scripts/download.mjs",
+              "https://kind.sigs.k8s.io/dl/v0.25.0/kind-windows-amd64",
+              "{{dataDir}}/bin/kind.exe"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "kubectl",
+      "label": "kubectl",
+      "candidates": {
+        "darwin": [
+          {
+            "path": "/opt/homebrew/bin/kubectl"
+          },
+          {
+            "path": "/usr/local/bin/kubectl"
+          },
+          {
+            "path": "{{dataDir}}/bin/kubectl"
+          }
+        ],
+        "linux": [
+          {
+            "path": "/usr/local/bin/kubectl"
+          },
+          {
+            "path": "/usr/bin/kubectl"
+          },
+          {
+            "path": "{{dataDir}}/bin/kubectl"
+          }
+        ],
+        "win32": [
+          {
+            "path": "{{env.LOCALAPPDATA}}/Microsoft/WinGet/Links/kubectl.exe"
+          },
+          {
+            "path": "C:/Program Files/Docker/Docker/resources/bin/kubectl.exe"
+          },
+          {
+            "path": "{{dataDir}}/bin/kubectl.exe"
+          }
+        ]
+      },
+      "install": {
+        "darwin": [
+          {
+            "command": "@node",
+            "args": [
+              "{{pluginDir}}/scripts/download.mjs",
+              "https://dl.k8s.io/release/v1.31.4/bin/darwin/{{#if isArm}}arm64{{/if}}{{#if isX64}}amd64{{/if}}/kubectl",
+              "{{dataDir}}/bin/kubectl"
+            ]
+          }
+        ],
+        "linux": [
+          {
+            "command": "@node",
+            "args": [
+              "{{pluginDir}}/scripts/download.mjs",
+              "https://dl.k8s.io/release/v1.31.4/bin/linux/{{#if isArm}}arm64{{/if}}{{#if isX64}}amd64{{/if}}/kubectl",
+              "{{dataDir}}/bin/kubectl"
+            ]
+          }
+        ],
+        "win32": [
+          {
+            "command": "@node",
+            "args": [
+              "{{pluginDir}}/scripts/download.mjs",
+              "https://dl.k8s.io/release/v1.31.4/bin/windows/amd64/kubectl.exe",
+              "{{dataDir}}/bin/kubectl.exe"
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "settings": [
+    {
+      "key": "clusterName",
+      "label": "Cluster Name",
+      "type": "string",
+      "default": "easyserver",
+      "group": "Cluster",
+      "pattern": "^[a-z0-9][a-z0-9-]*$",
+      "patternHint": "Lowercase letters, numbers and dashes.",
+      "description": "Changing it creates a new cluster."
+    },
+    {
+      "key": "workers",
+      "label": "Worker Nodes",
+      "type": "slider",
+      "default": 0,
+      "min": 0,
+      "max": 4,
+      "group": "Cluster",
+      "description": "Applies when the cluster is created. Delete Cluster to change it."
+    },
+    {
+      "key": "nodeImage",
+      "label": "Node Image",
+      "type": "string",
+      "default": "",
+      "group": "Cluster",
+      "placeholder": "kind’s default Kubernetes version",
+      "description": "A kindest/node image to pick a Kubernetes version, like kindest/node:v1.30.6."
+    },
+    {
+      "key": "apiPort",
+      "label": "API Port",
+      "type": "port",
+      "default": 6443,
+      "min": 1024,
+      "group": "Network"
+    },
+    {
+      "key": "exposeApi",
+      "label": "Reach the API from Other Computers",
+      "type": "boolean",
+      "default": false,
+      "group": "Network"
+    },
+    {
+      "key": "ingressPorts",
+      "label": "Ingress Ports",
+      "type": "boolean",
+      "default": true,
+      "group": "Network"
+    },
+    {
+      "key": "httpPort",
+      "label": "HTTP Port",
+      "type": "port",
+      "default": 8088,
+      "min": 1024,
+      "group": "Network",
+      "visibleIf": {
+        "key": "ingressPorts",
+        "equals": true
+      }
+    },
+    {
+      "key": "httpsPort",
+      "label": "HTTPS Port",
+      "type": "port",
+      "default": 8443,
+      "min": 1024,
+      "group": "Network",
+      "visibleIf": {
+        "key": "ingressPorts",
+        "equals": true
+      }
+    },
+    {
+      "key": "applyOnStart",
+      "label": "Apply Manifests on Start",
+      "type": "boolean",
+      "default": true,
+      "group": "Behavior"
+    },
+    {
+      "key": "onStop",
+      "label": "When the Plugin Stops",
+      "type": "select",
+      "default": "stop",
+      "group": "Behavior",
+      "restart": false,
+      "options": [
+        {
+          "label": "Pause Cluster",
+          "value": "stop"
+        },
+        {
+          "label": "Delete Cluster",
+          "value": "delete"
+        },
+        {
+          "label": "Leave Running",
+          "value": "keep"
+        }
+      ]
+    }
+  ],
+  "run": {
+    "command": "@node",
+    "args": [
+      "{{pluginDir}}/scripts/cluster.mjs",
+      "up"
+    ],
+    "env": {
+      "KUBECONFIG": "{{dataDir}}/access/kubeconfig.yaml"
+    },
+    "stop": {
+      "command": "@node",
+      "args": [
+        "{{pluginDir}}/scripts/cluster.mjs",
+        "stop"
+      ],
+      "timeoutSec": 180
+    }
+  },
+  "health": {
+    "type": "tcp",
+    "target": "127.0.0.1:{{settings.apiPort}}",
+    "intervalSec": 30
+  },
+  "actions": [
+    {
+      "id": "apply",
+      "label": "Apply Manifests",
+      "timeoutSec": 300,
+      "command": "@node",
+      "args": [
+        "{{pluginDir}}/scripts/cluster.mjs",
+        "apply"
+      ]
+    },
+    {
+      "id": "nodes",
+      "label": "Show Nodes",
+      "command": "{{bin.kubectl}}",
+      "args": [
+        "get",
+        "nodes",
+        "-o",
+        "wide"
+      ]
+    },
+    {
+      "id": "all",
+      "label": "Show Everything",
+      "command": "{{bin.kubectl}}",
+      "args": [
+        "get",
+        "all",
+        "--all-namespaces"
+      ]
+    },
+    {
+      "id": "events",
+      "label": "Recent Events",
+      "command": "{{bin.kubectl}}",
+      "args": [
+        "get",
+        "events",
+        "--all-namespaces",
+        "--sort-by=.lastTimestamp"
+      ]
+    },
+    {
+      "id": "delete",
+      "label": "Delete Cluster",
+      "confirm": "Delete the cluster and everything running in it? Starting the plugin creates a fresh one.",
+      "destructive": true,
+      "background": true,
+      "command": "@node",
+      "args": [
+        "{{pluginDir}}/scripts/cluster.mjs",
+        "delete"
+      ]
+    }
+  ],
+  "folders": [
+    {
+      "id": "manifests",
+      "label": "Manifests",
+      "root": "{{dataDir}}/manifests",
+      "accept": [
+        ".yaml",
+        ".yml",
+        ".json"
+      ],
+      "description": "Kubernetes YAML, applied in name order."
+    },
+    {
+      "id": "access",
+      "label": "Cluster Access",
+      "root": "{{dataDir}}/access",
+      "description": "kubeconfig.yaml for kubectl and other tools."
+    }
+  ]
+}

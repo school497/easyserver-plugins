@@ -1,0 +1,386 @@
+{
+  "schema": 1,
+  "id": "dev.easyserver.converter",
+  "name": "Bulk File Converter",
+  "version": "1.0.0",
+  "developer": "EasyServer",
+  "subtitle": "Drop files in, get converted files out",
+  "description": "Converts every file you put in Inbox: photos to WebP, JPEG, PNG or AVIF, audio to MP3, AAC, FLAC, Ogg or WAV, and video to MP4, WebM, MKV, MOV or animated GIF. Documents can become PDFs too.\n\nUpload files or whole folders to Inbox from the app. Converted files keep their folder structure in Converted, ready to download. Originals move to Originals, and anything that fails lands in Failed with the reason in the log.\n\nUses FFmpeg, installed automatically. Turning on Documents to PDF needs LibreOffice.",
+  "category": "computing",
+  "icon": "icon.svg",
+  "platforms": [
+    "darwin",
+    "linux",
+    "win32"
+  ],
+  "files": [
+    "icon.svg",
+    "scripts/converter.mjs",
+    "scripts/lib.mjs"
+  ],
+  "requires": [
+    {
+      "id": "ffmpeg",
+      "label": "FFmpeg",
+      "candidates": {
+        "darwin": [
+          {
+            "path": "/opt/homebrew/bin/ffmpeg"
+          },
+          {
+            "path": "/usr/local/bin/ffmpeg"
+          },
+          {
+            "path": "@path:ffmpeg"
+          }
+        ],
+        "linux": [
+          {
+            "path": "/usr/bin/ffmpeg"
+          },
+          {
+            "path": "/usr/local/bin/ffmpeg"
+          },
+          {
+            "path": "@path:ffmpeg"
+          }
+        ],
+        "win32": [
+          {
+            "path": "{{env.LOCALAPPDATA}}/Microsoft/WinGet/Links/ffmpeg.exe"
+          },
+          {
+            "path": "C:/ffmpeg/bin/ffmpeg.exe"
+          },
+          {
+            "path": "@path:ffmpeg"
+          }
+        ]
+      },
+      "install": {
+        "darwin": [
+          "brew install ffmpeg"
+        ],
+        "linux": [
+          "if command -v apt-get >/dev/null; then sudo -n apt-get install -y ffmpeg; elif command -v dnf >/dev/null; then sudo -n dnf install -y ffmpeg; elif command -v pacman >/dev/null; then sudo -n pacman -S --noconfirm ffmpeg; else echo \"No supported package manager found\"; exit 1; fi"
+        ],
+        "win32": [
+          "winget install --id Gyan.FFmpeg -e --silent --accept-package-agreements --accept-source-agreements --disable-interactivity"
+        ]
+      },
+      "hint": "Install FFmpeg (macOS: brew install ffmpeg · Linux: sudo apt install ffmpeg · Windows: winget install Gyan.FFmpeg)."
+    }
+  ],
+  "settings": [
+    {
+      "key": "imageFormat",
+      "label": "Convert Images To",
+      "type": "select",
+      "default": "webp",
+      "group": "Images",
+      "options": [
+        {
+          "label": "WebP",
+          "value": "webp"
+        },
+        {
+          "label": "JPEG",
+          "value": "jpg"
+        },
+        {
+          "label": "PNG",
+          "value": "png"
+        },
+        {
+          "label": "AVIF",
+          "value": "avif"
+        }
+      ]
+    },
+    {
+      "key": "imageQuality",
+      "label": "Image Quality",
+      "type": "slider",
+      "default": 85,
+      "min": 10,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "group": "Images",
+      "restart": true
+    },
+    {
+      "key": "maxWidth",
+      "label": "Maximum Width",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 20000,
+      "unit": "px",
+      "group": "Images",
+      "description": "0 keeps the original size. Larger images shrink to this width."
+    },
+    {
+      "key": "stripMetadata",
+      "label": "Remove Location and Camera Data",
+      "type": "boolean",
+      "default": true,
+      "group": "Images"
+    },
+    {
+      "key": "audioFormat",
+      "label": "Convert Audio To",
+      "type": "select",
+      "default": "mp3",
+      "group": "Audio",
+      "options": [
+        {
+          "label": "MP3",
+          "value": "mp3"
+        },
+        {
+          "label": "AAC",
+          "value": "m4a"
+        },
+        {
+          "label": "FLAC",
+          "value": "flac"
+        },
+        {
+          "label": "Ogg",
+          "value": "ogg"
+        },
+        {
+          "label": "WAV",
+          "value": "wav"
+        }
+      ]
+    },
+    {
+      "key": "audioBitrate",
+      "label": "Audio Bitrate",
+      "type": "select",
+      "default": "192k",
+      "group": "Audio",
+      "options": [
+        {
+          "label": "128 kbps",
+          "value": "128k"
+        },
+        {
+          "label": "192 kbps",
+          "value": "192k"
+        },
+        {
+          "label": "256 kbps",
+          "value": "256k"
+        },
+        {
+          "label": "320 kbps",
+          "value": "320k"
+        }
+      ]
+    },
+    {
+      "key": "videoFormat",
+      "label": "Convert Video To",
+      "type": "select",
+      "default": "mp4",
+      "group": "Video",
+      "options": [
+        {
+          "label": "MP4",
+          "value": "mp4"
+        },
+        {
+          "label": "WebM",
+          "value": "webm"
+        },
+        {
+          "label": "MKV",
+          "value": "mkv"
+        },
+        {
+          "label": "MOV",
+          "value": "mov"
+        },
+        {
+          "label": "GIF",
+          "value": "gif"
+        }
+      ]
+    },
+    {
+      "key": "videoQuality",
+      "label": "Video Quality",
+      "type": "slider",
+      "default": 23,
+      "min": 16,
+      "max": 36,
+      "unit": "CRF",
+      "group": "Video",
+      "description": "Lower is sharper and larger. 18–28 suits most videos."
+    },
+    {
+      "key": "maxHeight",
+      "label": "Maximum Resolution",
+      "type": "select",
+      "default": "keep",
+      "group": "Video",
+      "options": [
+        {
+          "label": "Original",
+          "value": "keep"
+        },
+        {
+          "label": "4K",
+          "value": "2160"
+        },
+        {
+          "label": "1080p",
+          "value": "1080"
+        },
+        {
+          "label": "720p",
+          "value": "720"
+        },
+        {
+          "label": "480p",
+          "value": "480"
+        }
+      ]
+    },
+    {
+      "key": "speed",
+      "label": "Encoding Speed",
+      "type": "select",
+      "default": "medium",
+      "group": "Video",
+      "options": [
+        {
+          "label": "Fast",
+          "value": "fast"
+        },
+        {
+          "label": "Balanced",
+          "value": "medium"
+        },
+        {
+          "label": "Smallest Files",
+          "value": "slow"
+        }
+      ]
+    },
+    {
+      "key": "docsToPdf",
+      "label": "Documents to PDF",
+      "type": "boolean",
+      "default": false,
+      "group": "Documents",
+      "description": "Word, Excel, PowerPoint and OpenDocument files. Needs LibreOffice on the server."
+    },
+    {
+      "key": "concurrency",
+      "label": "Files at Once",
+      "type": "slider",
+      "default": 2,
+      "min": 1,
+      "max": 8,
+      "group": "Processing"
+    },
+    {
+      "key": "keepOriginals",
+      "label": "Keep Originals",
+      "type": "boolean",
+      "default": true,
+      "group": "Processing",
+      "description": "Off deletes each original after it converts."
+    },
+    {
+      "key": "scanSeconds",
+      "label": "Check Inbox Every",
+      "type": "number",
+      "default": 5,
+      "min": 2,
+      "max": 300,
+      "unit": "seconds",
+      "group": "Processing"
+    }
+  ],
+  "run": {
+    "command": "@node",
+    "args": [
+      "{{pluginDir}}/scripts/converter.mjs"
+    ]
+  },
+  "actions": [
+    {
+      "id": "retry",
+      "label": "Retry Failed Files",
+      "description": "Moves everything in Failed back to Inbox.",
+      "command": "@node",
+      "args": [
+        "{{pluginDir}}/scripts/converter.mjs",
+        "retry"
+      ]
+    },
+    {
+      "id": "clear-converted",
+      "label": "Empty Converted",
+      "confirm": "Delete every file in Converted? This can’t be undone.",
+      "destructive": true,
+      "command": "@node",
+      "args": [
+        "{{pluginDir}}/scripts/converter.mjs",
+        "clear",
+        "converted"
+      ]
+    },
+    {
+      "id": "clear-originals",
+      "label": "Empty Originals",
+      "confirm": "Delete every file in Originals? This can’t be undone.",
+      "destructive": true,
+      "command": "@node",
+      "args": [
+        "{{pluginDir}}/scripts/converter.mjs",
+        "clear",
+        "originals"
+      ]
+    },
+    {
+      "id": "version",
+      "label": "FFmpeg Version",
+      "command": "{{bin.ffmpeg}}",
+      "args": [
+        "-hide_banner",
+        "-version"
+      ]
+    }
+  ],
+  "folders": [
+    {
+      "id": "inbox",
+      "label": "Inbox",
+      "root": "{{dataDir}}/inbox",
+      "description": "Upload files or folders here. Each one converts a few seconds after it arrives."
+    },
+    {
+      "id": "converted",
+      "label": "Converted",
+      "root": "{{dataDir}}/converted",
+      "description": "Finished files, in the same folders they were uploaded in."
+    },
+    {
+      "id": "originals",
+      "label": "Originals",
+      "root": "{{dataDir}}/originals"
+    },
+    {
+      "id": "failed",
+      "label": "Failed",
+      "root": "{{dataDir}}/failed",
+      "description": "Files that couldn’t be converted. The Output log says why."
+    }
+  ]
+}
